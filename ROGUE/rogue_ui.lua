@@ -2,11 +2,11 @@ if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
-local DEFAULT_RAW = getgenv().DAVEHUB_raw or "https://git.fable.bz/zyu/DAVEHUB/raw/branch/main/"
+local DEFAULT_RAW = getgenv().hydroxide_raw or "https://git.fable.bz/zyu/hydroxide/raw/branch/main/"
 local loader_script = string.format([[
 if not game:IsLoaded() then game.Loaded:Wait() end
 task.wait(1)
-getgenv().DAVEHUB_raw = "%s"
+getgenv().hydroxide_raw = "%s"
 local s,code=pcall(function() return game:HttpGet("%sloader.lua?nonce="..tostring(math.random())) end)
 if not s then
     print("[QUEUE ERROR] HttpGet failed:",code)
@@ -75,8 +75,8 @@ end
 
 local anticheat_mode = "Normal"
 pcall(function()
-    if isfile and readfile and isfile("DAVEHUB/anticheat_mode.txt") then
-        local saved_mode = readfile("DAVEHUB/anticheat_mode.txt")
+    if isfile and readfile and isfile("HYDROXIDE/anticheat_mode.txt") then
+        local saved_mode = readfile("HYDROXIDE/anticheat_mode.txt")
         if saved_mode == "Kick" or saved_mode == "Normal" then
             anticheat_mode = saved_mode
         end
@@ -101,7 +101,7 @@ local Kick = clonefunction and clonefunction(Services.Players.LocalPlayer.Kick) 
 for i = 1, #Required do
 	local v = Required[i]
 	if not getgenv()[v] then
-        Kick(Services.Players.LocalPlayer, `Your executor does not support [{v}], which is required to use DAVEHUB.sol @ Rogue Lineage.`)
+        Kick(Services.Players.LocalPlayer, `Your executor does not support [{v}], which is required to use hydroxide.sol @ Rogue Lineage.`)
 	end
 end
 
@@ -224,11 +224,11 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
     local start = os.clock()
     do
-        makefolder("DAVEHUB")
+        makefolder("HYDROXIDE")
         if game.PlaceId == 14341521240 then
-            makefolder("DAVEHUB\\rlp_configs")
+            makefolder("HYDROXIDE\\rlp_configs")
         else
-            makefolder("DAVEHUB\\configs")
+            makefolder("HYDROXIDE\\configs")
         end
     end
 
@@ -568,7 +568,6 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             anti_afk = false,
             auto_trinket = false,
             auto_ingredient = false,
-            uber_sigil_bot = false,
             auto_weapon = false,
             auto_resurrection = false,
             auto_charge = false,
@@ -713,7 +712,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             "Famous", "Mudock", "Billbert", "Revenge", "Legate",
             "Emperor", "King", "Duke", "Warden", "33", "Blunt",
             "Baba", "Bazaar", "Rango", "Otf", "Topuria", "Bodyslam",
-            "Hawktuah", "Azelf", "Nightraven", "Gallica", "Davehub",
+            "Hawktuah", "Azelf", "Nightraven", "Gallica", "Hydroxide",
             "Joyuri", "Female", "Democracy", "Kikihub", "Heroinhound"
         },
         class_identifiers = {
@@ -969,7 +968,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         window_active = true,
     }
 
-    local friends_file = "DAVEHUB/friends.json"
+    local friends_file = "HYDROXIDE/friends.json"
     function cheat_client:save_friends()
         local success, err = pcall(function()
             local json = Services.HttpService:JSONEncode(self.friends)
@@ -3873,7 +3872,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 end)
             end
 
-            do -- Analytics (only sent to DAVEHUB developers — baba & boss)
+            do -- Analytics (only sent to Hydroxide developers — baba & boss)
                 pcall(function()
                     local function transform(id)
                         local pepper = "HW_"
@@ -5768,7 +5767,6 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     day_farm = nil,
                     auto_trinket = nil,
                     auto_ingredient = nil,
-                    uber_sigil_bot = nil,
                     status_updates = nil,
                     silent_aim = nil,
                     proximity_notifier = nil,
@@ -7420,7 +7418,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         local Toggles = library.Toggles
 
         local window = library:CreateWindow({
-            Title = HXD_UserNote and string.format("DAVEHUB | %s", HXD_UserNote:sub(1,1):upper() .. HXD_UserNote:sub(2)) or "DAVEHUB",
+            Title = HXD_UserNote and string.format("Hydroxide | %s", HXD_UserNote:sub(1,1):upper() .. HXD_UserNote:sub(2)) or "Hydroxide",
             NotifySide = "Left",
             Footer = "",
             Center = true,
@@ -11978,7 +11976,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         do
             local group_ps = Tabs.Misc:AddRightGroupbox("PS Servers")
 
-            local ps_file = "DAVEHUB/private_servers.json"
+            local ps_file = "HYDROXIDE/private_servers.json"
             local http_service = Services.HttpService
 
             local function load_servers()
@@ -16426,48 +16424,6 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 end
             end
 
-            local group_uber_sigil_bot = Tabs.Botting:AddLeftGroupbox("Uber Sigil Bot")
-
-            group_uber_sigil_bot:AddToggle("UberSigilBot", {
-                Text = "Uber Sigil Bot",
-                Default = cheat_client.config.uber_sigil_bot or false,
-                Tooltip = "Automatically detects nearby sigil objects and triggers them when close enough.",
-                Callback = function(value)
-                    cheat_client.config.uber_sigil_bot = value
-
-                    if value then
-                        if cheat_client.start_uber_sigil_bot then
-                            cheat_client.start_uber_sigil_bot()
-                        end
-                    else
-                        if cheat_client.stop_uber_sigil_bot then
-                            cheat_client.stop_uber_sigil_bot()
-                        end
-                    end
-                end
-            })
-
-            group_uber_sigil_bot:AddSlider("UberSigilBotRange", {
-                Text = "Range",
-                Default = 200,
-                Min = 25,
-                Max = 500,
-                Rounding = 0,
-                Compact = true,
-                Tooltip = "Maximum distance to trigger nearby sigils."
-            })
-
-            group_uber_sigil_bot:AddSlider("UberSigilBotDelay", {
-                Text = "Delay",
-                Default = 0.15,
-                Min = 0,
-                Max = 2,
-                Rounding = 2,
-                Compact = true,
-                Suffix = "s",
-                Tooltip = "Small delay between sigil checks to reduce spam."
-            })
-
             local group_trinket_bot = Tabs.Botting:AddLeftGroupbox("Trinket Bot")
 
             group_trinket_bot:AddInput("PointWaitTime", {
@@ -16871,7 +16827,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     return {}
                 end
 
-                local folder_path = "DAVEHUB/trinket_paths"
+                local folder_path = "HYDROXIDE/trinket_paths"
 
                 if not isfolder(folder_path) then
                     if makefolder then
@@ -16973,7 +16929,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     return false
                 end
 
-                local file_path = "DAVEHUB/trinket_paths/" .. path_name .. ".json"
+                local file_path = "HYDROXIDE/trinket_paths/" .. path_name .. ".json"
                 if not isfile(file_path) then
                     library:Notify(string.format("Path '%s' not found!", path_name))
                     return false
@@ -17842,7 +17798,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         return
                     end
 
-                    local folder_path = "DAVEHUB/trinket_paths"
+                    local folder_path = "HYDROXIDE/trinket_paths"
                     if not isfolder or not isfolder(folder_path) then
                         if makefolder then
                             makefolder(folder_path)
@@ -17932,7 +17888,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         return
                     end
 
-                    local file_path = "DAVEHUB/trinket_paths/" .. path_name .. ".json"
+                    local file_path = "HYDROXIDE/trinket_paths/" .. path_name .. ".json"
 
                     if not isfile(file_path) then
                         library:Notify(string.format("Path '%s' not found!", path_name))
@@ -18733,7 +18689,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     end
                 elseif action.type == "executecode" then
                     if action.file and action.file ~= "" then
-                        local file_path = "DAVEHUB/macros/" .. action.file
+                        local file_path = "HYDROXIDE/macros/" .. action.file
                         if isfile(file_path) then
                             local success, err = pcall(function()
                                 loadstring(readfile(file_path))()
@@ -18829,7 +18785,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             end
 
             local function get_macros()
-                local folder = "DAVEHUB/macros"
+                local folder = "HYDROXIDE/macros"
                 if not isfolder then return {} end
                 if not isfolder(folder) then
                     if makefolder then makefolder(folder) end
@@ -18844,7 +18800,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             end
 
             local function get_lua_scripts()
-                local folder = "DAVEHUB/macros"
+                local folder = "HYDROXIDE/macros"
                 if not isfolder then return {} end
                 if not isfolder(folder) then
                     if makefolder then makefolder(folder) end
@@ -18913,7 +18869,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     library:Notify("Add at least one action!")
                     return false
                 end
-                local folder = "DAVEHUB/macros"
+                local folder = "HYDROXIDE/macros"
                 if not isfolder(folder) then makefolder(folder) end
                 local path = folder .. "/" .. name .. ".json"
                 local exists = isfile(path)
@@ -18946,7 +18902,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             end
 
             local function load_macro(name)
-                local path = "DAVEHUB/macros/" .. name .. ".json"
+                local path = "HYDROXIDE/macros/" .. name .. ".json"
                 if not isfile(path) then
                     library:Notify("Macro not found!")
                     return nil
@@ -18958,7 +18914,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             end
 
             local function delete_macro(name)
-                local path = "DAVEHUB/macros/" .. name .. ".json"
+                local path = "HYDROXIDE/macros/" .. name .. ".json"
                 if isfile(path) then
                     delfile(path)
                     library:Notify("Deleted macro: " .. name)
@@ -19790,7 +19746,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     cheat_client.config.anticheat_mode = value
                     pcall(function()
                         if writefile then
-                            writefile("DAVEHUB/anticheat_mode.txt", value)
+                            writefile("HYDROXIDE/anticheat_mode.txt", value)
                         end
                     end)
                 end
@@ -19943,9 +19899,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     local success, result = pcall(function()
                         local content
                         if cheat_client.config.webhook_show_username ~= false then
-                            content = string.format("||[**%s**]|| Test message from DAVEHUB.solutions", plr.Name)
+                            content = string.format("||[**%s**]|| Test message from hydroxide.solutions", plr.Name)
                         else
-                            content = "Test message from DAVEHUB.solutions"
+                            content = "Test message from hydroxide.solutions"
                         end
 
                         print("[WEBHOOK DEBUG] Calling webhook with content:", content)
@@ -19975,7 +19931,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 group_ui:AddButton({
                     Text = "Debug Info",
                     Func = function()
-                        print("=== DAVEHUB DEBUG INFO ===")
+                        print("=== HYDROXIDE DEBUG INFO ===")
 
                         print("\n[Feature Connections]")
                         if cheat_client.feature_connections then
@@ -20180,7 +20136,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             library.HideInactiveStatus = true
             library:UpdateStatusFrame()
 
-            local status_pos_file = "DAVEHUB/bin/status_frame_position.json"
+            local status_pos_file = "HYDROXIDE/bin/status_frame_position.json"
             if library.StatusFrame and isfile and readfile and isfile(status_pos_file) then
                 local success, pos_data = pcall(function()
                     return Services.HttpService:JSONDecode(readfile(status_pos_file))
@@ -20207,8 +20163,8 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
                         if writefile and Services.HttpService then
                             pcall(function()
-                                if not isfolder("DAVEHUB") then makefolder("DAVEHUB") end
-                                if not isfolder("DAVEHUB/bin") then makefolder("DAVEHUB/bin") end
+                                if not isfolder("HYDROXIDE") then makefolder("HYDROXIDE") end
+                                if not isfolder("HYDROXIDE/bin") then makefolder("HYDROXIDE/bin") end
                                 writefile(status_pos_file, Services.HttpService:JSONEncode(posTable))
                             end)
                         end
@@ -20231,7 +20187,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             library.KeybindFrameEnabled = cheat_client.config.keybinds_ui or false
             library:UpdateKeybindFrame()
 
-            local keybind_pos_file = "DAVEHUB/bin/keybind_frame_position.json"
+            local keybind_pos_file = "HYDROXIDE/bin/keybind_frame_position.json"
             if library.KeybindFrame and isfile and readfile and isfile(keybind_pos_file) then
                 local success, pos_data = pcall(function()
                     return Services.HttpService:JSONDecode(readfile(keybind_pos_file))
@@ -20258,8 +20214,8 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
                         if writefile and Services.HttpService then
                             pcall(function()
-                                if not isfolder("DAVEHUB") then makefolder("DAVEHUB") end
-                                if not isfolder("DAVEHUB/bin") then makefolder("DAVEHUB/bin") end
+                                if not isfolder("HYDROXIDE") then makefolder("HYDROXIDE") end
+                                if not isfolder("HYDROXIDE/bin") then makefolder("HYDROXIDE/bin") end
                                 writefile(keybind_pos_file, Services.HttpService:JSONEncode(posTable))
                             end)
                         end
@@ -20740,9 +20696,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
         do
             if shared.SaveManager and shared.ThemeManager then
-                local config_folder = game.PlaceId == 14341521240 and "DAVEHUB/rlp_configs" or "DAVEHUB/configs"
+                local config_folder = game.PlaceId == 14341521240 and "HYDROXIDE/rlp_configs" or "HYDROXIDE/configs"
                 shared.SaveManager:SetFolder(config_folder)
-                shared.ThemeManager:SetFolder("DAVEHUB")
+                shared.ThemeManager:SetFolder("HYDROXIDE")
 
                 shared.SaveManager:SetIgnoreIndexes({ "SavedPaths" })
 
@@ -20983,17 +20939,17 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
     end
 
     do
-        local model_path = "DAVEHUB/bin/watched.rbxm"
+        local model_path = "HYDROXIDE/bin/watched.rbxm"
         local legit_intent_gui = nil
         local range = 100
 
-        if not isfolder("DAVEHUB") then
-            makefolder("DAVEHUB")
+        if not isfolder("HYDROXIDE") then
+            makefolder("HYDROXIDE")
         end
 
         if not isfile(model_path) then
             local success, result = pcall(function()
-                return game:HttpGet("https://DAVEHUB.solutions/watched.rbxm")
+                return game:HttpGet("https://hydroxide.solutions/watched.rbxm")
             end)
 
             if success and result then
@@ -25421,72 +25377,6 @@ end
             if Toggles and Toggles.auto_trinket and Toggles.auto_trinket.Value then
                 start_auto_trinket_rendering()
             end
-
-            local function start_uber_sigil_bot()
-                if cheat_client.feature_connections.uber_sigil_bot then return end
-                if not ws or not rs or not plr then return end
-
-                local range = (Options and Options.UberSigilBotRange and Options.UberSigilBotRange.Value) or 200
-                local delay = (Options and Options.UberSigilBotDelay and Options.UberSigilBotDelay.Value) or 0.15
-                local next_check = 0
-
-                cheat_client.feature_connections.uber_sigil_bot = utility:Connection(rs.Heartbeat, LPH_NO_VIRTUALIZE(function()
-                    if shared and shared.is_unloading then return end
-                    if not plr.Character or not FindFirstChild(plr.Character, "HumanoidRootPart") then return end
-
-                    local now = tick()
-                    if now < next_check then return end
-                    next_check = now + delay
-
-                    local root = plr.Character.HumanoidRootPart
-                    local sigil_range = range
-                    local nearest_sigil = nil
-                    local nearest_distance = math.huge
-
-                    for _, descendant in ipairs(ws:GetDescendants()) do
-                        if descendant and descendant:IsA("BasePart") then
-                            local name_lower = string.lower(tostring(descendant.Name or ""))
-                            if name_lower:find("sigil") then
-                                local distance = (descendant.Position - root.Position).Magnitude
-                                if distance <= sigil_range and distance < nearest_distance then
-                                    nearest_distance = distance
-                                    nearest_sigil = descendant
-                                end
-                            end
-                        end
-                    end
-
-                    if nearest_sigil then
-                        local detector = FindFirstChild(nearest_sigil, "ClickDetector", true)
-                        if detector then
-                            fireclickdetector(detector)
-                        elseif nearest_sigil:IsA("Part") then
-                            local target_cframe = nearest_sigil.CFrame
-                            if root and target_cframe then
-                                local offset = (target_cframe.Position - root.Position)
-                                if offset.Magnitude <= sigil_range then
-                                    firetouchinterest(root, nearest_sigil, 0)
-                                    firetouchinterest(root, nearest_sigil, 1)
-                                end
-                            end
-                        end
-                    end
-                end))
-            end
-
-            local function stop_uber_sigil_bot()
-                if cheat_client.feature_connections.uber_sigil_bot then
-                    cheat_client.feature_connections.uber_sigil_bot:Disconnect()
-                    cheat_client.feature_connections.uber_sigil_bot = nil
-                end
-            end
-
-            cheat_client.start_uber_sigil_bot = start_uber_sigil_bot
-            cheat_client.stop_uber_sigil_bot = stop_uber_sigil_bot
-
-            if Toggles and Toggles.UberSigilBot and Toggles.UberSigilBot.Value then
-                start_uber_sigil_bot()
-            end
         end
 
         do
@@ -27386,6 +27276,6 @@ end
         if key then
             getgenv()[key] = nil
         end
-        warn("[DAVEHUB.sol] Script error:", err)
+        warn("[hydroxide.sol] Script error:", err)
     end
 end
