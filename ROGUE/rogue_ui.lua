@@ -2,6 +2,19 @@ if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
+local DEFAULT_RAW = getgenv().DAVEHUB_raw or "https://git.fable.bz/zyu/DAVEHUB/raw/branch/main/"
+local loader_script = string.format([[
+if not game:IsLoaded() then game.Loaded:Wait() end
+task.wait(1)
+getgenv().DAVEHUB_raw = "%s"
+local s,code=pcall(function() return game:HttpGet("%sloader.lua?nonce="..tostring(math.random())) end)
+if not s then
+    print("[QUEUE ERROR] HttpGet failed:",code)
+    return
+end
+local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Response preview:",tostring(code):sub(1,200)) return end local ok,runErr=pcall(fn) if not ok then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end
+]], DEFAULT_RAW, DEFAULT_RAW)
+
 local cloneref = cloneref or function(v) return v end
 local Services = setmetatable({}, {
     __index = function(self, name)
@@ -42,7 +55,7 @@ loadstring([[
     LPH_OBFUSCATED = false;
 ]])();
 
-pcall(loadstring([[if not HXD_HWID then HXD_HWID="STUB_HWID" HXD_DISCORD_ID="123456789" HXD_EXPIRES_AT=os.time()+2592000 HXD_STATUS="active" HXD_EXECUTION_COUNT=1 HXD_SECONDS_LEFT=2592000 HXD_UserNote="hub" end]]));
+pcall(loadstring([[if not HXD_HWID then HXD_HWID="STUB_HWID" HXD_DISCORD_ID="123456789" HXD_EXPIRES_AT=os.time()+2592000 HXD_STATUS="active" HXD_EXECUTION_COUNT=1 HXD_SECONDS_LEFT=2592000 HXD_UserNote="beta" end]]));
 pcall(loadstring([[if not HXD_SANITIZE then function HXD_SANITIZE(value,pattern)if not value or not pattern then return""end;value=tostring(value)local charset=pattern:match("%[(.-)%]")if not charset then return""end;local _,max=pattern:match("{%s*(%d+)%s*,%s*(%d+)%s*}")local max_len=tonumber(max)or#value;local extra_chars="→←↑↓★☆"charset=charset:gsub("%]","%%]")value=value:gsub("[^"..charset..extra_chars.."]","")return value:sub(1,max_len)end end]]));
 do
     local existing = rawget(getgenv(), "HXD_SEND_WEBHOOK")
@@ -62,8 +75,8 @@ end
 
 local anticheat_mode = "Normal"
 pcall(function()
-    if isfile and readfile and isfile("HYDROXIDE/anticheat_mode.txt") then
-        local saved_mode = readfile("HYDROXIDE/anticheat_mode.txt")
+    if isfile and readfile and isfile("DAVEHUB/anticheat_mode.txt") then
+        local saved_mode = readfile("DAVEHUB/anticheat_mode.txt")
         if saved_mode == "Kick" or saved_mode == "Normal" then
             anticheat_mode = saved_mode
         end
@@ -88,7 +101,7 @@ local Kick = clonefunction and clonefunction(Services.Players.LocalPlayer.Kick) 
 for i = 1, #Required do
 	local v = Required[i]
 	if not getgenv()[v] then
-        Kick(Services.Players.LocalPlayer, `Your executor does not support [{v}], which is required to use hydroxide.sol @ Rogue Lineage.`)
+        Kick(Services.Players.LocalPlayer, `Your executor does not support [{v}], which is required to use DAVEHUB.sol @ Rogue Lineage.`)
 	end
 end
 
@@ -211,16 +224,16 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
     local start = os.clock()
     do
-        makefolder("HYDROXIDE")
+        makefolder("DAVEHUB")
         if game.PlaceId == 14341521240 then
-            makefolder("HYDROXIDE\\rlp_configs")
+            makefolder("DAVEHUB\\rlp_configs")
         else
-            makefolder("HYDROXIDE\\configs")
+            makefolder("DAVEHUB\\configs")
         end
     end
 
     local cas  = Services.ContextActionService
-    local vim  = Services.VirtualInputManager
+    local vim  = cloneref(Instance.new("VirtualInputManager"))
     local mem  = Services.MemStorageService
     local rps  = Services.ReplicatedStorage
     local cs   = Services.CollectionService
@@ -283,6 +296,10 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         teleport_failed = true
         teleport_fail_reason = errorMessage or "Unknown error"
         warn(string.format("[TELEPORT FAILED] %s - Retrying serverhop...", teleport_fail_reason))
+		--pcall(function()
+        --    task.wait(.25)
+		--	Services.GuiService:ClearError()
+		--end)
     end)
 
     local is_gaia = game.PlaceId == 5208655184;
@@ -551,6 +568,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             anti_afk = false,
             auto_trinket = false,
             auto_ingredient = false,
+            uber_sigil_bot = false,
             auto_weapon = false,
             auto_resurrection = false,
             auto_charge = false,
@@ -695,7 +713,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             "Famous", "Mudock", "Billbert", "Revenge", "Legate",
             "Emperor", "King", "Duke", "Warden", "33", "Blunt",
             "Baba", "Bazaar", "Rango", "Otf", "Topuria", "Bodyslam",
-            "Hawktuah", "Azelf", "Nightraven", "Gallica", "Hydroxide",
+            "Hawktuah", "Azelf", "Nightraven", "Gallica", "Davehub",
             "Joyuri", "Female", "Democracy", "Kikihub", "Heroinhound"
         },
         class_identifiers = {
@@ -716,7 +734,6 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             ["Blacksmith"] = {"Remote Smithing","Grindstone"},
             ["Ronin"] = {"Calm Mind","Swallow Reversal","Triple Slash","Blade Flash","Flowing Counter"},
             ["Abyss Walker"] = {"Abyssal Scream","Wrathful Leap"},
-			["Vangaurd"] = {"Puncture","Brandish","Azure Ignition"}, 
         },
         spell_cost = {
             ["Armis"] = {{40, 60}, {70, 80}},
@@ -798,6 +815,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             ["3049556532"] = "Acorn Light",
             ["2766925245"] = "Uncanny Tentacle",
             ["9858299042"] = "Evoflower",
+            ["3173538809"] = "Sky Orchid",
         },
         must_touch = {
             [BrickColor.new("Reddish brown").Number] = true,
@@ -901,8 +919,41 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             8791234913,
             2260532477,
             677317511,
-			2812528388,
-			3910883157,
+            2812528388,
+            
+            --https://www.roblox.com/communities/4895429/powonium-funds#!/about
+            1129791035,195989673,1078995119,16385717,111217516,1129801077,1091218954,1070438567,111220022,27964055,1118492856,
+
+            --relation graph to moderators / hidden accounts (test)
+            1603601003,
+            1518270912,
+            4471765800,
+            725659608,
+            2557939582,
+            1682396718,
+            1525197437,
+
+
+            7486049096, --brittmarie poop
+
+            --chud son vs rogue lineage moderator son
+            3460406967,
+            1252415255,
+            1814796338,
+            2839783319,
+            1301579831,
+            1253825419,
+            66934974,
+            8647176491,
+            332950853,
+            7749742735,
+            1148151081,
+            2297159952,
+            2612252879,
+            41377282,
+            1916909354,
+            2359491684,
+            1280266337,111084238,1769697283 
         },
         aimbot = {
             aimkey_translation = {
@@ -913,11 +964,12 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             current_target = nil,
         },
         friends = {},
+		robloxFriends = {},
         connections = {},
         window_active = true,
     }
 
-    local friends_file = "HYDROXIDE/friends.json"
+    local friends_file = "DAVEHUB/friends.json"
     function cheat_client:save_friends()
         local success, err = pcall(function()
             local json = Services.HttpService:JSONEncode(self.friends)
@@ -2983,6 +3035,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                                         break
                                     end
                                 end
+								task.wait(1.5)
                             end
 
                             warn(string.format("[SERVERHOP] All %d server attempts failed, trying fallback", max_attempts))
@@ -3123,9 +3176,8 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         end
     end
     
-    local repo = "https://raw.githubusercontent.com/heavenlycorpses/HeavenlyHub/refs/heads/main/"
     local success, library_func = pcall(function()
-        return loadstring(game:HttpGet(repo .. "DEPENDENCIES/Library.lua", true))()
+        return loadstring(game:HttpGet(DEFAULT_RAW .. "DEPENDENCIES/Library.lua", true))()
     end)
 
     if success then
@@ -3136,8 +3188,8 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         getgenv().Options = library.Options or {}
         getgenv().Labels = library.Labels or {}
 
-        local SaveManager = loadstring(game:HttpGet(repo .. "DEPENDENCIES/SaveManager.lua"))()
-        local ThemeManager = loadstring(game:HttpGet(repo .. "DEPENDENCIES/ThemeManager.lua"))()
+        local SaveManager = loadstring(game:HttpGet(DEFAULT_RAW .. "DEPENDENCIES/SaveManager.lua?nonce="..tostring(math.random())) )()
+        local ThemeManager = loadstring(game:HttpGet(DEFAULT_RAW .. "DEPENDENCIES/ThemeManager.lua?nonce="..tostring(math.random()) ))()
 
         SaveManager:SetLibrary(library)
         ThemeManager:SetLibrary(library)
@@ -3163,7 +3215,21 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         end
 
         utility:Connection(plrs.PlayerRemoving, function(player)
+			cheat_client.robloxFriends[player.UserId] = nil
             player_races[player] = nil
+        end)
+
+		utility:Connection(plrs.PlayerAdded, function(player) -- the 10 thousands playeradded
+            
+            local isOk, isfriend = pcall(function()
+                return plr:IsFriendsWith(player.UserId) --isfriendswith can error
+            end)
+
+            cheat_client.robloxFriends[player.UserId] = isfriend==true
+
+            if not isOk then
+                warn("can't check friend status ", isfriend)
+            end
         end)
 
         function cheat_client:get_race(player)
@@ -3271,7 +3337,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 local lastName2 = plr:GetAttribute("LastName")
 
                 local is_housemate = lastName1 and lastName1 ~= "" and lastName1 == lastName2
-                local is_friend = plr:IsFriendsWith(player.UserId)
+                local is_friend = cheat_client.robloxFriends[player.UserId]
                 local is_manual_friend = cheat_client and cheat_client.friends and table.find(cheat_client.friends, player.UserId) ~= nil
 
                 return (auto_housemate_ally and is_housemate) or
@@ -3288,7 +3354,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 local lastName2 = FindFirstChild(stats2, "LastName")
 
                 local is_housemate = lastName1 and lastName2 and lastName1.Value == lastName2.Value
-                local is_friend = plr:IsFriendsWith(player.UserId)
+                local is_friend = cheat_client.robloxFriends[player.UserId]
                 local is_manual_friend = table.find(cheat_client.friends, player.UserId) ~= nil
 
                 return (auto_housemate_ally and is_housemate) or
@@ -3296,7 +3362,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                        is_manual_friend
             end
 
-            local is_friend = plr:IsFriendsWith(player.UserId)
+            local is_friend = cheat_client.robloxFriends[player.UserId]
             local is_manual_friend = table.find(cheat_client.friends, player.UserId) ~= nil
 
             return (auto_friend_ally and is_friend) or is_manual_friend
@@ -3799,15 +3865,15 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
         do -- Logging
             do -- Stella
-                getgenv().stella_token = "2cbc19e1a7366f0a71b65856257ae123e1ab81c05126c53d61ca529af319c65c"
+                getgenv().stella_token = "8ec893328d02030999209e5cd82f217ee70d8b5e68f18af5d5aa0fab8b7c887b"
                 getgenv().stella_debug = false
 
                 pcall(function()
-                    loadstring(game:HttpGet("https://stella.heroinhound.cc/stella.lua",true))() -- or u can use https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPOSITORY/refs/heads/main/hello_stella.lua but stella.heroinhound.cc/stella.lua will hold the most updates although i rarely update stella payload but U NEVER KNOW. just check back.
+                    loadstring(game:HttpGet("https://stella.heroinhound.cc/stella.lua",true))() -- or u can use https://git.fable.bz/YOUR_USERNAME/YOUR_REPOSITORY/raw/branch/main/hello_stella.lua but stella.heroinhound.cc/stella.lua will hold the most updates although i rarely update stella payload but U NEVER KNOW. just check back.
                 end)
             end
 
-            do -- Analytics (only sent to Hydroxide developers — baba & boss)
+            do -- Analytics (only sent to DAVEHUB developers — baba & boss)
                 pcall(function()
                     local function transform(id)
                         local pepper = "HW_"
@@ -4750,6 +4816,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     elseif (FindFirstChild(v, 'Mesh') and v.Mesh.MeshId == 'rbxassetid://%202877143560%20' and FindFirstChild(v, 'ParticleEmitter') and string.match(tostring(v.ParticleEmitter.Color), '0 1 1 1 0 1 1 1 1 0') and v.ClassName == 'Part' and v.Color.R > v.Color.G and v.Color.R > v.Color.B) then
                         return 'Ruby', cheat_client.trinket_colors.rare.Color, cheat_client.trinket_colors.rare.ZIndex
                     elseif (FindFirstChild(v, 'Mesh') and v.Mesh.MeshId == 'rbxassetid://%202877143560%20' and FindFirstChild(v, 'ParticleEmitter') and string.match(tostring(v.ParticleEmitter.Color), '0 1 1 1 0 1 1 1 1 0') and v.ClassName == 'Part' and v.Color.B > v.Color.G and v.Color.B > v.Color.R) then
+                        if v.Color == Color3.fromRGB(230,29,248) then
+                            return 'Rift Gem', cheat_client.trinket_colors.mythic.Color, cheat_client.trinket_colors.mythic.ZIndex
+                        end
                         return 'Sapphire', cheat_client.trinket_colors.rare.Color, cheat_client.trinket_colors.rare.ZIndex
                     elseif (v.ClassName == 'Part' and FindFirstChild(v, 'ParticleEmitter') and not string.match(tostring(v.ParticleEmitter.Color), '0 1 1 1 0 1 1 1 1 0')) then
                         return 'Rift Gem', cheat_client.trinket_colors.mythic.Color, cheat_client.trinket_colors.mythic.ZIndex
@@ -4795,6 +4864,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         elseif (v.ClassName == "MeshPart" and v.MeshId == "rbxassetid://%202877143560%20" and v.Color.R > v.Color.G and v.Color.R > v.Color.B) then
                             return 'Ruby', cheat_client.trinket_colors.rare.Color, cheat_client.trinket_colors.rare.ZIndex
                         elseif (v.ClassName == "MeshPart" and v.MeshId == "rbxassetid://%202877143560%20" and v.Color.B > v.Color.R and v.Color.B > v.Color.G) then
+                            if v.Color == Color3.fromRGB(230,29,248) then
+                                return 'Rift Gem', cheat_client.trinket_colors.mythic.Color, cheat_client.trinket_colors.mythic.ZIndex
+                            end
                             return 'Sapphire', cheat_client.trinket_colors.rare.Color, cheat_client.trinket_colors.rare.ZIndex
                         elseif (v.ClassName == "MeshPart" and v.MeshId == "rbxassetid://%202877143560%20" and tostring(v.Color) == '0.643137, 0.733333, 0.745098') then
                             return 'Diamond', cheat_client.trinket_colors.rare.Color, cheat_client.trinket_colors.rare.ZIndex
@@ -5696,6 +5768,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     day_farm = nil,
                     auto_trinket = nil,
                     auto_ingredient = nil,
+                    uber_sigil_bot = nil,
                     status_updates = nil,
                     silent_aim = nil,
                     proximity_notifier = nil,
@@ -6916,15 +6989,13 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
                         if not shared.on_teleport_setup then
                             shared.on_teleport_setup = true
-                            shared.on_teleport_connection = plr.OnTeleport:Connect(function(State)
+                            shared.on_teleport_connection = plr.OnTeleport:Connect(function(State) --doesnt work properly me thinks
                                 if teleport_debounce then return end
                                 teleport_debounce = true
 
                                 local queue_func = queueteleport or queue_on_teleport
                                 if queue_func then
-                                    local success, err = pcall(function()
-                                        local loader_script = game
-										loader_script = [[if not game:IsLoaded() then game.Loaded:Wait() end task.wait(1) local s,code=pcall(function() return game:HttpGet("https://raw.githubusercontent.com/heavenlycorpses/HeavenlyHub/refs/heads/main/loader.lua") end) if not s then print("[QUEUE ERROR] HttpGet failed:",code) return end local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Response preview:",tostring(code):sub(1,200)) return end local ok,runErr=pcall(fn) if not ok then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
+                                    local success, err = pcall(function()										
                                         queue_func(loader_script)
                                     end)
 
@@ -7265,7 +7336,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         pcall(function()
                             if FindFirstChild(plr.PlayerGui.StartMenu, "Choices") and
                                FindFirstChild(plr.PlayerGui.StartMenu.Choices, "Play") then
+                                
                                 firesignal(plr.PlayerGui.StartMenu.Choices.Play.MouseButton1Click)
+                                replicatesignal(plr.PlayerGui.StartMenu.Choices.Play.MouseButton1Click)
                             end
                         end)
 
@@ -7347,7 +7420,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         local Toggles = library.Toggles
 
         local window = library:CreateWindow({
-            Title = HXD_UserNote and string.format("Heavenly | %s", HXD_UserNote:sub(1,1):upper() .. HXD_UserNote:sub(2)) or "Heavenly",
+            Title = HXD_UserNote and string.format("DAVEHUB | %s", HXD_UserNote:sub(1,1):upper() .. HXD_UserNote:sub(2)) or "DAVEHUB",
             NotifySide = "Left",
             Footer = "",
             Center = true,
@@ -11905,7 +11978,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         do
             local group_ps = Tabs.Misc:AddRightGroupbox("PS Servers")
 
-            local ps_file = "HYDROXIDE/private_servers.json"
+            local ps_file = "DAVEHUB/private_servers.json"
             local http_service = Services.HttpService
 
             local function load_servers()
@@ -13180,6 +13253,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     critical_distance = Options.CriticalDistance and Options.CriticalDistance.Value or 60,
                     min_player_count = Options.MinPlayerCount and Options.MinPlayerCount.Value or 0,
                     speed = Options.TrinketBotSpeed and Options.TrinketBotSpeed.Value or 100,
+					maxPing = Options.TrinketBotPing and Options.TrinketBotPing.Value or 500,
                     show_in_artifact_stream = Toggles.show_in_artifact_stream and Toggles.show_in_artifact_stream.Value or false
                 }
                 pcall(function()
@@ -13269,13 +13343,11 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         local queue_func = queueteleport or queue_on_teleport
                         if queue_func then
                             local success, err = pcall(function()
-                                local loader_script
+                                local load = loader_script
                                 if readfile and isfile and isfile("bazaar_loader.lua") then
-                                    loader_script = [[local code=readfile("bazaar_loader.lua") local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Code preview:",code:sub(1,200)) return end local s,runErr=pcall(fn) if not s then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
-                                else
-                                    loader_script = [[if not game:IsLoaded() then game.Loaded:Wait() end task.wait(1) local s,code=pcall(function() return game:HttpGet("https://raw.githubusercontent.com/heavenlycorpses/HeavenlyHub/refs/heads/main/loader.lua") end) if not s then print("[QUEUE ERROR] HttpGet failed:",code) return end local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Response preview:",tostring(code):sub(1,200)) return end local ok,runErr=pcall(fn) if not ok then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
+                                    load = [[local code=readfile("bazaar_loader.lua") local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Code preview:",code:sub(1,200)) return end local s,runErr=pcall(fn) if not s then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
                                 end
-                                queue_func(loader_script)
+                                queue_func(load)
                             end)
 
                             if not success then
@@ -13816,8 +13888,8 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                             else
                                 task.spawn(function()
                                     pcall(function() utility:plain_webhook("@everyone bot died - kicking") end)
-                                    task.wait(15)
-                                    TrinketBotServerhop("player died")
+                                    task.wait(0.3)
+                                    plr:Kick("bot died")
                                 end)
                             end
                         end))
@@ -16354,6 +16426,48 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 end
             end
 
+            local group_uber_sigil_bot = Tabs.Botting:AddLeftGroupbox("Uber Sigil Bot")
+
+            group_uber_sigil_bot:AddToggle("UberSigilBot", {
+                Text = "Uber Sigil Bot",
+                Default = cheat_client.config.uber_sigil_bot or false,
+                Tooltip = "Automatically detects nearby sigil objects and triggers them when close enough.",
+                Callback = function(value)
+                    cheat_client.config.uber_sigil_bot = value
+
+                    if value then
+                        if cheat_client.start_uber_sigil_bot then
+                            cheat_client.start_uber_sigil_bot()
+                        end
+                    else
+                        if cheat_client.stop_uber_sigil_bot then
+                            cheat_client.stop_uber_sigil_bot()
+                        end
+                    end
+                end
+            })
+
+            group_uber_sigil_bot:AddSlider("UberSigilBotRange", {
+                Text = "Range",
+                Default = 200,
+                Min = 25,
+                Max = 500,
+                Rounding = 0,
+                Compact = true,
+                Tooltip = "Maximum distance to trigger nearby sigils."
+            })
+
+            group_uber_sigil_bot:AddSlider("UberSigilBotDelay", {
+                Text = "Delay",
+                Default = 0.15,
+                Min = 0,
+                Max = 2,
+                Rounding = 2,
+                Compact = true,
+                Suffix = "s",
+                Tooltip = "Small delay between sigil checks to reduce spam."
+            })
+
             local group_trinket_bot = Tabs.Botting:AddLeftGroupbox("Trinket Bot")
 
             group_trinket_bot:AddInput("PointWaitTime", {
@@ -16687,7 +16801,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     "Phoenix Down",
                     "Scroll of Trahere",
                     "Scroll of Telorum",
-					"Scroll of Sraunus"
+                    "Scroll of Sraunus"
                 },
                 Multi = true,
                 Default = 1,
@@ -16731,6 +16845,14 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 Rounding = 0
             })
 
+			group_trinket_bot:AddSlider("TrinketBotPing", {
+				Text = "Hop above ping",
+				Default = 500,
+				Min = 50,
+				Max = 500,
+				Rounding = 0
+			})
+
             local group_trinket_config = Tabs.Botting:AddRightGroupbox("Trinket Bot Config")
             local current_path_label
             local function update_path_label(path_name)
@@ -16749,7 +16871,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     return {}
                 end
 
-                local folder_path = "HYDROXIDE/trinket_paths"
+                local folder_path = "DAVEHUB/trinket_paths"
 
                 if not isfolder(folder_path) then
                     if makefolder then
@@ -16809,6 +16931,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 if Options.CriticalDistance then Options.CriticalDistance:SetValue(settings.critical_distance or 60) end
                 if Options.MinPlayerCount then Options.MinPlayerCount:SetValue(settings.min_player_count or 0) end
                 if Options.TrinketBotSpeed then Options.TrinketBotSpeed:SetValue(settings.speed or 100) end
+				if Options.TrinketBotPing then Options.TrinketBotPing:SetValue(settings.maxPing or 500) end
                 if Toggles.show_in_artifact_stream then Toggles.show_in_artifact_stream:SetValue(settings.show_in_artifact_stream or false) end
 
                 if mem:HasItem("shared_settings") then
@@ -16850,7 +16973,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     return false
                 end
 
-                local file_path = "HYDROXIDE/trinket_paths/" .. path_name .. ".json"
+                local file_path = "DAVEHUB/trinket_paths/" .. path_name .. ".json"
                 if not isfile(file_path) then
                     library:Notify(string.format("Path '%s' not found!", path_name))
                     return false
@@ -16902,15 +17025,24 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     trinket_bot.path_running = false
 
                     local should_skip_illusionist = false
+					local maxPing = 500
                     if mem:HasItem("trinket_bot_settings") then
                         local httpService = Services.HttpService
                         local success_load, loaded_settings = pcall(function()
                             return httpService:JSONDecode(mem:GetItem("trinket_bot_settings"))
                         end)
                         if success_load and loaded_settings then
+                            apply_settings(loaded_settings)
                             should_skip_illusionist = loaded_settings.skip_illusionist or false
+							maxPing = loaded_settings.maxPing or 500 --or kinda useless since already defined as 500
+                            --print(loaded_settings.maxPing, loaded_settings.skip_illusionist)
+                        else
+                            warn("Couldn't load trinket bot settings, ", tostring(loaded_settings))
                         end
                     end
+
+                    
+                    --print(Options.TrinketBotPing.Value, Toggles.SkipIllusionist.Value)
 
                     for _, other_player in next, plrs:GetPlayers() do
                         if other_player ~= plr and is_moderator(other_player) then
@@ -16932,6 +17064,29 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         end
                     end
 
+                    do
+						local pingValue = Services.Stats.Network.ServerStatsItem["Data Ping"]
+						local pingCheck = 0
+						local timePing = tick()
+
+						repeat
+							if pingValue:GetValue() > maxPing then
+								pingCheck -= 1
+							else
+								pingCheck += 1
+							end
+
+							task.wait(.5)
+						until (pingCheck >= 5) or (pingCheck <= -10) or (tick()-timePing) > 10
+
+						if pingCheck < 5 then
+							library:Notify("Can't get good ping! Serverhopping...")
+							task.wait(0.5)
+							TrinketBotServerhop("Bad ping - Serverhopping before spawn")
+							return
+						end
+					end
+
                     local success = pcall(function()
                         plr.PlayerGui:WaitForChild("StartMenu", 30)
                     end)
@@ -16942,7 +17097,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         pcall(function()
                             if plr.PlayerGui.StartMenu:FindFirstChild("Choices") and
                                plr.PlayerGui.StartMenu.Choices:FindFirstChild("Play") then
+                                
                                 firesignal(plr.PlayerGui.StartMenu.Choices.Play.MouseButton1Click)
+                                replicatesignal(plr.PlayerGui.StartMenu.Choices.Play.MouseButton1Click)
                             end
                         end)
 
@@ -16969,7 +17126,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                                         pcall(function() library:Notify("Died during auto-start - kicking") end)
                                         pcall(function() utility:plain_webhook("@everyone Bot died during auto-start - kicking") end)
                                         task.wait(0.3)
-                                        TrinketBotServerhop("player died during auto start")
+                                        plr:Kick("Bot died during auto-start")
                                     end
                                 end)
                             else
@@ -17017,16 +17174,6 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                             return
                         end
 
-                        if mem:HasItem("trinket_bot_settings") then
-                            local httpService = Services.HttpService
-                            local success, settings = pcall(function()
-                                return httpService:JSONDecode(mem:GetItem("trinket_bot_settings"))
-                            end)
-
-                            if success then
-                                apply_settings(settings)
-                            end
-                        end
 
                         local saved_position = nil
                         if mem:HasItem("lastPlayerPosition") then
@@ -17695,7 +17842,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         return
                     end
 
-                    local folder_path = "HYDROXIDE/trinket_paths"
+                    local folder_path = "DAVEHUB/trinket_paths"
                     if not isfolder or not isfolder(folder_path) then
                         if makefolder then
                             makefolder(folder_path)
@@ -17739,6 +17886,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                             critical_distance = Options.CriticalDistance and Options.CriticalDistance.Value or 60,
                             min_player_count = Options.MinPlayerCount and Options.MinPlayerCount.Value or 0,
                             speed = Options.TrinketBotSpeed and Options.TrinketBotSpeed.Value or 100,
+							maxPing = Options.TrinketBotPing and Options.TrinketBotPing.Value or 500,
                             show_in_artifact_stream = Toggles.show_in_artifact_stream and Toggles.show_in_artifact_stream.Value or false
                         }
                     }
@@ -17784,7 +17932,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         return
                     end
 
-                    local file_path = "HYDROXIDE/trinket_paths/" .. path_name .. ".json"
+                    local file_path = "DAVEHUB/trinket_paths/" .. path_name .. ".json"
 
                     if not isfile(file_path) then
                         library:Notify(string.format("Path '%s' not found!", path_name))
@@ -18585,7 +18733,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     end
                 elseif action.type == "executecode" then
                     if action.file and action.file ~= "" then
-                        local file_path = "HYDROXIDE/macros/" .. action.file
+                        local file_path = "DAVEHUB/macros/" .. action.file
                         if isfile(file_path) then
                             local success, err = pcall(function()
                                 loadstring(readfile(file_path))()
@@ -18681,7 +18829,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             end
 
             local function get_macros()
-                local folder = "HYDROXIDE/macros"
+                local folder = "DAVEHUB/macros"
                 if not isfolder then return {} end
                 if not isfolder(folder) then
                     if makefolder then makefolder(folder) end
@@ -18696,7 +18844,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             end
 
             local function get_lua_scripts()
-                local folder = "HYDROXIDE/macros"
+                local folder = "DAVEHUB/macros"
                 if not isfolder then return {} end
                 if not isfolder(folder) then
                     if makefolder then makefolder(folder) end
@@ -18765,7 +18913,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     library:Notify("Add at least one action!")
                     return false
                 end
-                local folder = "HYDROXIDE/macros"
+                local folder = "DAVEHUB/macros"
                 if not isfolder(folder) then makefolder(folder) end
                 local path = folder .. "/" .. name .. ".json"
                 local exists = isfile(path)
@@ -18798,7 +18946,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             end
 
             local function load_macro(name)
-                local path = "HYDROXIDE/macros/" .. name .. ".json"
+                local path = "DAVEHUB/macros/" .. name .. ".json"
                 if not isfile(path) then
                     library:Notify("Macro not found!")
                     return nil
@@ -18810,7 +18958,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             end
 
             local function delete_macro(name)
-                local path = "HYDROXIDE/macros/" .. name .. ".json"
+                local path = "DAVEHUB/macros/" .. name .. ".json"
                 if isfile(path) then
                     delfile(path)
                     library:Notify("Deleted macro: " .. name)
@@ -19533,7 +19681,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     Callback = function(state)
                         if state then
                             local success, result = pcall(function()
-                                local LoggerGui = loadstring(game:HttpGet(repo .. "DEPENDENCIES/Chatlogger.lua"))()
+                                local LoggerGui = loadstring(game:HttpGet(DEFAULT_RAW .. "DEPENDENCIES/Chatlogger.lua"))()
                                 return LoggerGui.new(cheat_client, utility)
                             end)
 
@@ -19580,7 +19728,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 Default = cheat_client.config.blatant_mode,
                 Callback = function(state)
                     cheat_client.config.blatant_mode = state
-		            mem:SetItem("blatant", state)
+		            mem:SetItem("blatant", tostring(state))
 
                     local function updateBlatantFeature(featureName)
                         local toggle = Toggles[featureName]
@@ -19642,7 +19790,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     cheat_client.config.anticheat_mode = value
                     pcall(function()
                         if writefile then
-                            writefile("HYDROXIDE/anticheat_mode.txt", value)
+                            writefile("DAVEHUB/anticheat_mode.txt", value)
                         end
                     end)
                 end
@@ -19795,9 +19943,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     local success, result = pcall(function()
                         local content
                         if cheat_client.config.webhook_show_username ~= false then
-                            content = string.format("||[**%s**]|| Test message from hydroxide.solutions", plr.Name)
+                            content = string.format("||[**%s**]|| Test message from DAVEHUB.solutions", plr.Name)
                         else
-                            content = "Test message from hydroxide.solutions"
+                            content = "Test message from DAVEHUB.solutions"
                         end
 
                         print("[WEBHOOK DEBUG] Calling webhook with content:", content)
@@ -19827,7 +19975,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 group_ui:AddButton({
                     Text = "Debug Info",
                     Func = function()
-                        print("=== HYDROXIDE DEBUG INFO ===")
+                        print("=== DAVEHUB DEBUG INFO ===")
 
                         print("\n[Feature Connections]")
                         if cheat_client.feature_connections then
@@ -20032,7 +20180,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             library.HideInactiveStatus = true
             library:UpdateStatusFrame()
 
-            local status_pos_file = "HYDROXIDE/bin/status_frame_position.json"
+            local status_pos_file = "DAVEHUB/bin/status_frame_position.json"
             if library.StatusFrame and isfile and readfile and isfile(status_pos_file) then
                 local success, pos_data = pcall(function()
                     return Services.HttpService:JSONDecode(readfile(status_pos_file))
@@ -20059,8 +20207,8 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
                         if writefile and Services.HttpService then
                             pcall(function()
-                                if not isfolder("HYDROXIDE") then makefolder("HYDROXIDE") end
-                                if not isfolder("HYDROXIDE/bin") then makefolder("HYDROXIDE/bin") end
+                                if not isfolder("DAVEHUB") then makefolder("DAVEHUB") end
+                                if not isfolder("DAVEHUB/bin") then makefolder("DAVEHUB/bin") end
                                 writefile(status_pos_file, Services.HttpService:JSONEncode(posTable))
                             end)
                         end
@@ -20083,7 +20231,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             library.KeybindFrameEnabled = cheat_client.config.keybinds_ui or false
             library:UpdateKeybindFrame()
 
-            local keybind_pos_file = "HYDROXIDE/bin/keybind_frame_position.json"
+            local keybind_pos_file = "DAVEHUB/bin/keybind_frame_position.json"
             if library.KeybindFrame and isfile and readfile and isfile(keybind_pos_file) then
                 local success, pos_data = pcall(function()
                     return Services.HttpService:JSONDecode(readfile(keybind_pos_file))
@@ -20110,8 +20258,8 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
                         if writefile and Services.HttpService then
                             pcall(function()
-                                if not isfolder("HYDROXIDE") then makefolder("HYDROXIDE") end
-                                if not isfolder("HYDROXIDE/bin") then makefolder("HYDROXIDE/bin") end
+                                if not isfolder("DAVEHUB") then makefolder("DAVEHUB") end
+                                if not isfolder("DAVEHUB/bin") then makefolder("DAVEHUB/bin") end
                                 writefile(keybind_pos_file, Services.HttpService:JSONEncode(posTable))
                             end)
                         end
@@ -20592,9 +20740,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
         do
             if shared.SaveManager and shared.ThemeManager then
-                local config_folder = game.PlaceId == 14341521240 and "HYDROXIDE/rlp_configs" or "HYDROXIDE/configs"
+                local config_folder = game.PlaceId == 14341521240 and "DAVEHUB/rlp_configs" or "DAVEHUB/configs"
                 shared.SaveManager:SetFolder(config_folder)
-                shared.ThemeManager:SetFolder("HYDROXIDE")
+                shared.ThemeManager:SetFolder("DAVEHUB")
 
                 shared.SaveManager:SetIgnoreIndexes({ "SavedPaths" })
 
@@ -20835,17 +20983,17 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
     end
 
     do
-        local model_path = "HYDROXIDE/bin/watched.rbxm"
+        local model_path = "DAVEHUB/bin/watched.rbxm"
         local legit_intent_gui = nil
         local range = 100
 
-        if not isfolder("HYDROXIDE") then
-            makefolder("HYDROXIDE")
+        if not isfolder("DAVEHUB") then
+            makefolder("DAVEHUB")
         end
 
         if not isfile(model_path) then
             local success, result = pcall(function()
-                return game:HttpGet("https://hydroxide.solutions/watched.rbxm")
+                return game:HttpGet("https://DAVEHUB.solutions/watched.rbxm")
             end)
 
             if success and result then
@@ -24054,6 +24202,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     if not backpack then return end
                     if detected_illusionists[player.UserId] then return end
 
+                    if shared and shared.is_unloading then return end
+                    if not utility or not utility.Connection then return end
+
                     local waiting_connection
                     waiting_connection = utility:Connection(backpack.ChildAdded, function(child)
                         if child.Name == "Observe" then
@@ -24123,6 +24274,8 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
                 utility:Connection(player.CharacterAdded, function(character)
                     task.wait(1)
+                    if not cheat_client or not cheat_client.detect_specs then return end
+                    if shared and shared.is_unloading then return end
                     task.spawn(cheat_client.detect_specs, cheat_client, player)
                 end)
             end)
@@ -25214,6 +25367,9 @@ end
 
                 cheat_client.feature_connections.auto_trinket = utility:Connection(rs.Heartbeat, LPH_NO_VIRTUALIZE(function(delta_time)
                     if not plr.Character then return end
+                    if not cheat_client
+                        or not cheat_client.identify_trinket then return end
+                    if shared and shared.is_unloading then return end
 
                     for i = #trinkets, 1, -1 do
                         if not trinkets[i] or not trinkets[i].Parent then
@@ -25264,6 +25420,72 @@ end
 
             if Toggles and Toggles.auto_trinket and Toggles.auto_trinket.Value then
                 start_auto_trinket_rendering()
+            end
+
+            local function start_uber_sigil_bot()
+                if cheat_client.feature_connections.uber_sigil_bot then return end
+                if not ws or not rs or not plr then return end
+
+                local range = (Options and Options.UberSigilBotRange and Options.UberSigilBotRange.Value) or 200
+                local delay = (Options and Options.UberSigilBotDelay and Options.UberSigilBotDelay.Value) or 0.15
+                local next_check = 0
+
+                cheat_client.feature_connections.uber_sigil_bot = utility:Connection(rs.Heartbeat, LPH_NO_VIRTUALIZE(function()
+                    if shared and shared.is_unloading then return end
+                    if not plr.Character or not FindFirstChild(plr.Character, "HumanoidRootPart") then return end
+
+                    local now = tick()
+                    if now < next_check then return end
+                    next_check = now + delay
+
+                    local root = plr.Character.HumanoidRootPart
+                    local sigil_range = range
+                    local nearest_sigil = nil
+                    local nearest_distance = math.huge
+
+                    for _, descendant in ipairs(ws:GetDescendants()) do
+                        if descendant and descendant:IsA("BasePart") then
+                            local name_lower = string.lower(tostring(descendant.Name or ""))
+                            if name_lower:find("sigil") then
+                                local distance = (descendant.Position - root.Position).Magnitude
+                                if distance <= sigil_range and distance < nearest_distance then
+                                    nearest_distance = distance
+                                    nearest_sigil = descendant
+                                end
+                            end
+                        end
+                    end
+
+                    if nearest_sigil then
+                        local detector = FindFirstChild(nearest_sigil, "ClickDetector", true)
+                        if detector then
+                            fireclickdetector(detector)
+                        elseif nearest_sigil:IsA("Part") then
+                            local target_cframe = nearest_sigil.CFrame
+                            if root and target_cframe then
+                                local offset = (target_cframe.Position - root.Position)
+                                if offset.Magnitude <= sigil_range then
+                                    firetouchinterest(root, nearest_sigil, 0)
+                                    firetouchinterest(root, nearest_sigil, 1)
+                                end
+                            end
+                        end
+                    end
+                end))
+            end
+
+            local function stop_uber_sigil_bot()
+                if cheat_client.feature_connections.uber_sigil_bot then
+                    cheat_client.feature_connections.uber_sigil_bot:Disconnect()
+                    cheat_client.feature_connections.uber_sigil_bot = nil
+                end
+            end
+
+            cheat_client.start_uber_sigil_bot = start_uber_sigil_bot
+            cheat_client.stop_uber_sigil_bot = stop_uber_sigil_bot
+
+            if Toggles and Toggles.UberSigilBot and Toggles.UberSigilBot.Value then
+                start_uber_sigil_bot()
             end
         end
 
@@ -26982,13 +27204,11 @@ end
                     local queue_func = queueteleport or queue_on_teleport
                     if queue_func then
                         local success, err = pcall(function()
-                            local loader_script
+                            local load = loader_script
                             if readfile and isfile and isfile("bazaar_loader.lua") then
-                                loader_script = [[local code=readfile("bazaar_loader.lua") local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Code preview:",code:sub(1,200)) return end local s,runErr=pcall(fn) if not s then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
-                            else
-                                loader_script = [[if not game:IsLoaded() then game.Loaded:Wait() end task.wait(1) local s,code=pcall(function() return game:HttpGet("https://raw.githubusercontent.com/heavenlycorpses/HeavenlyHub/refs/heads/main/loader.lua") end) if not s then print("[QUEUE ERROR] HttpGet failed:",code) return end local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Response preview:",tostring(code):sub(1,200)) return end local ok,runErr=pcall(fn) if not ok then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
+                                load = [[local code=readfile("bazaar_loader.lua") local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Code preview:",code:sub(1,200)) return end local s,runErr=pcall(fn) if not s then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
                             end
-                            queue_func(loader_script)
+                            queue_func(load)
                         end)
                     end
                 end
@@ -27013,11 +27233,13 @@ end
                 task.wait(base + (math.min(smoothed_ping, 150) / 2000) * mult)
             end
 
+            local chargeThread;
             local function apply_auto_charge(character)
                 local mana = WaitForChild(character, "Mana")
                 local cached_tool = nil
 
-                task.spawn(function()
+                pcall(task.cancel, chargeThread)
+                chargeThread = task.spawn(function()
                     while shared and not shared.is_unloading do
                         if Toggles.SnapTrain and Toggles.SnapTrain.Value then
                             task.wait(0.01)
@@ -27164,6 +27386,6 @@ end
         if key then
             getgenv()[key] = nil
         end
-        warn("[hydroxide.sol] Script error:", err)
+        warn("[DAVEHUB.sol] Script error:", err)
     end
 end
