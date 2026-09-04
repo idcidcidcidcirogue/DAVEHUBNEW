@@ -16678,27 +16678,110 @@ local function loop_gain_orderly(times)
 end
 
 -- ===== ZSCROOM FARMING =====
+-- ===== ZSCROOM FARMING (USING BETTER FLIGHT) =====
 local function farm_zscrooms()
     library:Notify("Going to zscrooms...")
     
-    -- Enable flight
-    if Toggles.flight then
-        Toggles.flight:SetValue(true)
+    -- STEP 1: Teleport to Oresfall Inn (safe)
+    teleport_to_inn("Oresfall")
+    task.wait(2)
+    
+    -- STEP 2: Enable BETTER FLIGHT (this is the one that actually moves you)
+    if Toggles.better_flight then
+        Toggles.better_flight:SetValue(true)
+        library:Notify("Better Flight enabled!")
     end
     
-    -- Fly to zscroom spawn
-    if not fly_to_position(COORDS.ZscroomSpawn) then
-        -- If too far, use inn teleport to get closer
-        library:Notify("Too far from zscrooms - using Oresfall Inn teleport")
-        teleport_to_inn("Oresfall")
-        task.wait(2)
-        fly_to_position(COORDS.ZscroomSpawn)
+    -- Wait for flight to activate
+    task.wait(1)
+    
+    -- STEP 3: Use flight to move (use WASD keys through VirtualInputManager)
+    library:Notify("Flying to zscroom spawn...")
+    
+    -- We'll use the existing flight controls via VIM
+    -- Hold W to move forward
+    if vim then
+        -- Get direction to target
+        if plr.Character and FindFirstChild(plr.Character, "HumanoidRootPart") then
+            local root = plr.Character.HumanoidRootPart
+            local current_pos = root.Position
+            local target_pos = COORDS.ZscroomSpawn
+            local distance = (target_pos - current_pos).Magnitude
+            
+            -- Use SmoothTeleport in chunks (still the most reliable)
+            local max_step = 300
+            local steps = math.max(1, math.ceil(distance / max_step))
+            local step_vector = (target_pos - current_pos) / steps
+            
+            for i = 1, steps do
+                if not trinket_bot.path_running then
+                    library:Notify("Bot stopped!")
+                    return false
+                end
+                
+                local next_pos = current_pos + (step_vector * i)
+                SmoothTeleport(next_pos)
+                
+                local delay = math.random(20, 50) / 100
+                task.wait(delay)
+                
+                if plr.Character and FindFirstChild(plr.Character, "HumanoidRootPart") then
+                    current_pos = plr.Character.HumanoidRootPart.Position
+                end
+            end
+            
+            SmoothTeleport(target_pos)
+            task.wait(0.5)
+        end
     end
     
-    -- Fly to farm spot
-    fly_to_position(COORDS.ZscroomFarm)
+    library:Notify("Arrived at zscroom spawn!")
     
+    -- STEP 4: Move to farm spot
+    library:Notify("Moving to farm spot...")
+    
+    if plr.Character and FindFirstChild(plr.Character, "HumanoidRootPart") then
+        local root = plr.Character.HumanoidRootPart
+        local current_pos = root.Position
+        local target_pos = COORDS.ZscroomFarm
+        local distance = (target_pos - current_pos).Magnitude
+        
+        if distance > 10 then
+            local max_step = 300
+            local steps = math.max(1, math.ceil(distance / max_step))
+            local step_vector = (target_pos - current_pos) / steps
+            
+            for i = 1, steps do
+                if not trinket_bot.path_running then
+                    library:Notify("Bot stopped!")
+                    return false
+                end
+                
+                local next_pos = current_pos + (step_vector * i)
+                SmoothTeleport(next_pos)
+                
+                local delay = math.random(20, 50) / 100
+                task.wait(delay)
+                
+                if plr.Character and FindFirstChild(plr.Character, "HumanoidRootPart") then
+                    current_pos = plr.Character.HumanoidRootPart.Position
+                end
+            end
+            
+            SmoothTeleport(target_pos)
+            task.wait(0.5)
+        end
+    end
+    
+    library:Notify("Arrived at farm spot!")
+    
+    -- STEP 5: FARM
     library:Notify("Farming zscrooms...")
+    
+    -- Make sure flight stays on
+    if Toggles.better_flight then
+        Toggles.better_flight:SetValue(true)
+    end
     
     -- Train fist until mana unlocked
     library:Notify("Training fist until mana unlocked...")
