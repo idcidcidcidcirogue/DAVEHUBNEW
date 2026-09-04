@@ -16680,27 +16680,63 @@ local function loop_gain_orderly(times)
 end
 
 -- ===== ZSCROOM FARMING (FIXED - USES FLOWERLIGHT TOWN INN) =====
+-- ===== ZSCROOM FARMING (USES ORIGINAL INN SYSTEM) =====
 local function farm_zscrooms()
     library:Notify("Going to zscrooms...")
     
-    -- STEP 1: Teleport to Flowerlight Town Inn (closest to zscrooms)
-    teleport_to_inn("Flowerlight Town")
-    task.wait(2)
+    -- STEP 1: Use the original script's inn teleport to Oresfall (closest working inn)
+    -- The original function is already defined in the script as teleport_to_inn()
+    teleport_to_inn("Oresfall")
+    task.wait(3)
     
-    -- STEP 2: Enable flight
+    -- STEP 2: Enable flight (original script's flight)
     if Toggles.flight then
         Toggles.flight:SetValue(true)
         library:Notify("Flight enabled")
     end
     
-    -- STEP 3: Fly to zscroom spawn (should be close now)
-    library:Notify("Flying to zscroom spawn...")
-    fly_to_position(COORDS.ZscroomSpawn)
-    task.wait(0.5)
+    -- STEP 3: Use SmoothTeleport (original script function) to move to zscrooms
+    -- Break into smaller chunks to avoid 1500 limit
+    if plr.Character and FindFirstChild(plr.Character, "HumanoidRootPart") then
+        local root = plr.Character.HumanoidRootPart
+        local current_pos = root.Position
+        local target_pos = COORDS.ZscroomSpawn
+        local distance = (target_pos - current_pos).Magnitude
+        
+        library:Notify(string.format("Distance: %.0f studs", distance))
+        
+        -- Move in 300 stud chunks using original SmoothTeleport
+        local max_step = 300
+        local steps = math.max(1, math.ceil(distance / max_step))
+        local step_vector = (target_pos - current_pos) / steps
+        
+        for i = 1, steps do
+            if not trinket_bot.path_running then
+                library:Notify("Bot stopped!")
+                return false
+            end
+            
+            local next_pos = current_pos + (step_vector * i)
+            
+            -- Use the original script's SmoothTeleport
+            SmoothTeleport(next_pos)
+            
+            local delay = math.random(20, 50) / 100
+            task.wait(delay)
+            
+            if plr.Character and FindFirstChild(plr.Character, "HumanoidRootPart") then
+                current_pos = plr.Character.HumanoidRootPart.Position
+            end
+        end
+        
+        -- Final position
+        SmoothTeleport(COORDS.ZscroomSpawn)
+        task.wait(0.5)
+    end
     
-    -- STEP 4: Fly to farm spot
-    library:Notify("Flying to farm spot...")
-    fly_to_position(COORDS.ZscroomFarm)
+    -- STEP 4: Move to farm spot (should be close now)
+    library:Notify("Moving to farm spot...")
+    SmoothTeleport(COORDS.ZscroomFarm)
     task.wait(0.5)
     
     library:Notify("Arrived at zscrooms!")
