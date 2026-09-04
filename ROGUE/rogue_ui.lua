@@ -16424,6 +16424,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 end
             end
 
+            local group_trinket_bot = Tabs.Botting:AddLeftGroupbox("Trinket Bot")
             -- ============================================
             -- COMPLETE CLASS PROGRESSION BOT - GAIA
             -- WITH ALL CORRECT DIALOGUE OPTIONS
@@ -17166,7 +17167,6 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 Tooltip = "Test zscroom farming section only"
             })
 
-            local group_trinket_bot = Tabs.Botting:AddLeftGroupbox("Trinket Bot")
 
             group_trinket_bot:AddInput("PointWaitTime", {
                 Default = "0",
