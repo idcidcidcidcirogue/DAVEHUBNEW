@@ -16678,7 +16678,7 @@ local function loop_gain_orderly(times)
 end
 
 -- ===== ZSCROOM FARMING =====
--- ===== ZSCROOM FARMING (USING BETTER FLIGHT) =====
+-- ===== ZSCROOM FARMING (FIXED - ACTUALLY MOVES YOU) =====
 local function farm_zscrooms()
     library:Notify("Going to zscrooms...")
     
@@ -16686,53 +16686,55 @@ local function farm_zscrooms()
     teleport_to_inn("Oresfall")
     task.wait(2)
     
-    -- STEP 2: Enable BETTER FLIGHT (this is the one that actually moves you)
-    if Toggles.better_flight then
-        Toggles.better_flight:SetValue(true)
-        library:Notify("Better Flight enabled!")
+    -- STEP 2: Enable flight
+    if Toggles.flight then
+        Toggles.flight:SetValue(true)
+        library:Notify("Flight enabled!")
     end
     
-    -- Wait for flight to activate
+    -- Wait a moment
     task.wait(1)
     
-    -- STEP 3: Use flight to move (use WASD keys through VirtualInputManager)
-    library:Notify("Flying to zscroom spawn...")
+    -- STEP 3: DIRECT MOVE TO ZSCROOM SPAWN (bypass the distance check)
+    library:Notify("Moving to zscroom spawn...")
     
-    -- We'll use the existing flight controls via VIM
-    -- Hold W to move forward
-    if vim then
-        -- Get direction to target
-        if plr.Character and FindFirstChild(plr.Character, "HumanoidRootPart") then
-            local root = plr.Character.HumanoidRootPart
-            local current_pos = root.Position
-            local target_pos = COORDS.ZscroomSpawn
-            local distance = (target_pos - current_pos).Magnitude
-            
-            -- Use SmoothTeleport in chunks (still the most reliable)
-            local max_step = 300
-            local steps = math.max(1, math.ceil(distance / max_step))
-            local step_vector = (target_pos - current_pos) / steps
-            
-            for i = 1, steps do
-                if not trinket_bot.path_running then
-                    library:Notify("Bot stopped!")
-                    return false
-                end
-                
-                local next_pos = current_pos + (step_vector * i)
-                SmoothTeleport(next_pos)
-                
-                local delay = math.random(20, 50) / 100
-                task.wait(delay)
-                
-                if plr.Character and FindFirstChild(plr.Character, "HumanoidRootPart") then
-                    current_pos = plr.Character.HumanoidRootPart.Position
-                end
+    if plr.Character and FindFirstChild(plr.Character, "HumanoidRootPart") then
+        local root = plr.Character.HumanoidRootPart
+        local current_pos = root.Position
+        local target_pos = COORDS.ZscroomSpawn
+        local distance = (target_pos - current_pos).Magnitude
+        
+        library:Notify(string.format("Distance: %.0f studs - moving in steps", distance))
+        
+        -- Break into chunks of 300 studs max
+        local max_step = 300
+        local steps = math.max(1, math.ceil(distance / max_step))
+        local step_vector = (target_pos - current_pos) / steps
+        
+        for i = 1, steps do
+            if not trinket_bot.path_running then
+                library:Notify("Bot stopped!")
+                return false
             end
             
-            SmoothTeleport(target_pos)
-            task.wait(0.5)
+            local next_pos = current_pos + (step_vector * i)
+            
+            -- Use direct CFrame teleport for each chunk (bypasses SmoothTeleport limit)
+            root.CFrame = CFrame.new(next_pos)
+            
+            -- Random delay to look human
+            local delay = math.random(20, 50) / 100
+            task.wait(delay)
+            
+            -- Update position
+            if plr.Character and FindFirstChild(plr.Character, "HumanoidRootPart") then
+                current_pos = plr.Character.HumanoidRootPart.Position
+            end
         end
+        
+        -- Final exact position
+        root.CFrame = CFrame.new(target_pos)
+        task.wait(0.5)
     end
     
     library:Notify("Arrived at zscroom spawn!")
@@ -16747,6 +16749,8 @@ local function farm_zscrooms()
         local distance = (target_pos - current_pos).Magnitude
         
         if distance > 10 then
+            library:Notify(string.format("Distance: %.0f studs", distance))
+            
             local max_step = 300
             local steps = math.max(1, math.ceil(distance / max_step))
             local step_vector = (target_pos - current_pos) / steps
@@ -16758,7 +16762,7 @@ local function farm_zscrooms()
                 end
                 
                 local next_pos = current_pos + (step_vector * i)
-                SmoothTeleport(next_pos)
+                root.CFrame = CFrame.new(next_pos)
                 
                 local delay = math.random(20, 50) / 100
                 task.wait(delay)
@@ -16768,7 +16772,7 @@ local function farm_zscrooms()
                 end
             end
             
-            SmoothTeleport(target_pos)
+            root.CFrame = CFrame.new(target_pos)
             task.wait(0.5)
         end
     end
@@ -16779,8 +16783,8 @@ local function farm_zscrooms()
     library:Notify("Farming zscrooms...")
     
     -- Make sure flight stays on
-    if Toggles.better_flight then
-        Toggles.better_flight:SetValue(true)
+    if Toggles.flight then
+        Toggles.flight:SetValue(true)
     end
     
     -- Train fist until mana unlocked
