@@ -12555,7 +12555,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
                 local current_position = root.Position
                 local distance = (targetPosition - current_position).Magnitude
-                if distance > 20000 then
+                if distance > 1500 then
                     library:Notify(string.format("!! Attempted teleport of %.0f studs! Stopping path... (if this is a bug DM work at a pizza place bot)", distance))
                     trinket_bot.path_running = false
                     return
@@ -16426,9 +16426,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
             local group_trinket_bot = Tabs.Botting:AddLeftGroupbox("Trinket Bot")
 
-                    -- ============================================
--- CLASS PROGRESSION BOT - COMPLETE WORKING VERSION
--- Paste this ENTIRE block into your script
+            -- ============================================
+-- COMPLETE CLASS PROGRESSION BOT - HYBRID VERSION
+-- Uses inn teleports + flight (NO DIRECT TELEPORTS)
 -- ============================================
 
 -- ===== COORDINATES =====
@@ -16483,51 +16483,13 @@ local DIALOGUE = {
     Yaalda = { first = "..." },
 }
 
--- ===== HELPER FUNCTIONS =====
-local function interact_with_npc(npc_pos, dialogue_option, wait_time)
-    wait_time = wait_time or 2
-    if not plr.Character or not FindFirstChild(plr.Character, "HumanoidRootPart") then
-        library:Notify("Character not found!")
-        return false
-    end
-    SmoothTeleport(npc_pos)
-    task.wait(0.5)
-    local click_detector = nil
-    for _, v in next, workspace.NPCs:GetChildren() do
-        local hrp = FindFirstChild(v, "HumanoidRootPart")
-        if hrp and (hrp.Position - npc_pos).Magnitude < 30 then
-            click_detector = FindFirstChildWhichIsA(v, "ClickDetector", true)
-            break
-        end
-    end
-    if click_detector then
-        fireclickdetector(click_detector)
-        task.wait(0.5)
-    end
-    if dialogue_remote and dialogue_option then
-        dialogue_remote:FireServer({choice = dialogue_option})
-        task.wait(wait_time)
-    end
-    return true
-end
-
-local function reset_character()
-    library:Notify("Resetting character...")
-    if plr.Character then
-        plr.Character:BreakJoints()
-    end
-    task.wait(3)
-    while not (plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")) do
-        task.wait(0.5)
-    end
-    task.wait(1)
-    return true
-end
-
+-- ===== INN TELEPORT (SAFE - BUILT-IN GAME MECHANIC) =====
 local function teleport_to_inn(inn_name)
     library:Notify("Teleporting to " .. inn_name .. " Inn...")
+    
     local dialogue_response = (inn_name == "Flowerlight Town") and "A room, please." or "Sure."
     local inn_keeper
+    
     if inn_name == "Flowerlight Town" then
         inn_keeper = FindFirstChild(workspace.NPCs, "Ria")
     elseif inn_name == "Scroomville" then
@@ -16540,10 +16502,12 @@ local function teleport_to_inn(inn_name)
             end
         end
     end
+    
     if not inn_keeper then
         library:Notify("Inn keeper not found at " .. inn_name)
         return false
     end
+    
     local hrp = plr.Character.HumanoidRootPart
     for i = 1, 3 do
         if plr.Character and hrp then
@@ -16561,27 +16525,137 @@ local function teleport_to_inn(inn_name)
         end
         task.wait(0.5)
     end
+    
     task.wait(3)
     return true
 end
 
+-- ===== FLIGHT TO POSITION (SHORT DISTANCES) =====
+local function fly_to_position(target_pos)
+    if not plr.Character or not FindFirstChild(plr.Character, "HumanoidRootPart") then
+        library:Notify("Character not found!")
+        return false
+    end
+    
+    -- Enable flight
+    if Toggles.flight then
+        Toggles.flight:SetValue(true)
+    end
+    
+    local root = plr.Character.HumanoidRootPart
+    local current_pos = root.Position
+    local distance = (target_pos - current_pos).Magnitude
+    
+    if distance < 10 then
+        return true
+    end
+    
+    -- Only use flight for short distances (under 500 studs)
+    if distance > 500 then
+        library:Notify(string.format("Distance %.0f studs is far - using inn teleport instead", distance))
+        return false
+    end
+    
+    library:Notify(string.format("Flying %.0f studs...", distance))
+    
+    -- Break into chunks
+    local max_step = 200
+    local steps = math.max(1, math.ceil(distance / max_step))
+    local step_vector = (target_pos - current_pos) / steps
+    
+    for i = 1, steps do
+        if not trinket_bot.path_running then
+            library:Notify("Bot stopped!")
+            return false
+        end
+        
+        local next_pos = current_pos + (step_vector * i)
+        SmoothTeleport(next_pos)
+        
+        local delay = math.random(20, 50) / 100
+        task.wait(delay)
+        
+        if plr.Character and FindFirstChild(plr.Character, "HumanoidRootPart") then
+            current_pos = plr.Character.HumanoidRootPart.Position
+        end
+    end
+    
+    -- Final position
+    if plr.Character and FindFirstChild(plr.Character, "HumanoidRootPart") then
+        SmoothTeleport(target_pos)
+    end
+    
+    task.wait(math.random(30, 60) / 100)
+    return true
+end
+
+-- ===== FLY TO NPC (SHORT DISTANCE) =====
+local function fly_to_npc(npc_pos, dialogue_option, wait_time)
+    wait_time = wait_time or 2
+    
+    if not fly_to_position(npc_pos) then
+        return false
+    end
+    
+    -- Find and interact with NPC
+    local click_detector = nil
+    for _, v in next, workspace.NPCs:GetChildren() do
+        local hrp = FindFirstChild(v, "HumanoidRootPart")
+        if hrp and (hrp.Position - npc_pos).Magnitude < 30 then
+            click_detector = FindFirstChildWhichIsA(v, "ClickDetector", true)
+            break
+        end
+    end
+    
+    if click_detector then
+        fireclickdetector(click_detector)
+        task.wait(0.5)
+    end
+    
+    if dialogue_remote and dialogue_option then
+        dialogue_remote:FireServer({choice = dialogue_option})
+        task.wait(wait_time)
+    end
+    
+    return true
+end
+
+-- ===== RESET CHARACTER =====
+local function reset_character()
+    library:Notify("Resetting character...")
+    if plr.Character then
+        plr.Character:BreakJoints()
+    end
+    task.wait(3)
+    while not (plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")) do
+        task.wait(0.5)
+    end
+    task.wait(1)
+    return true
+end
+
+-- ===== GAIN ORDERLY LOOP =====
 local function loop_gain_orderly(times)
     times = times or 5
     library:Notify(string.format("Starting Gain Orderly loop (%d times)...", times))
     local completed = 0
+    
     for attempt = 1, times * 2 do
         if completed >= times then break end
         if not plr.Character or not FindFirstChild(plr.Character, "HumanoidRootPart") then
             return false
         end
+        
         local elixir = FindFirstChild(plr.Backpack, "Tespian Elixir")
         if not elixir then
             library:Notify("Out of Tespian Elixir!")
             return false
         end
+        
         if cs:HasTag(plr.Character, "Danger") then
             repeat task.wait(0.5) until not cs:HasTag(plr.Character, "Danger")
         end
+        
         local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
         if humanoid then
             humanoid:EquipTool(elixir)
@@ -16599,37 +16673,56 @@ local function loop_gain_orderly(times)
         end
         task.wait(0.5)
     end
+    
     return completed >= times
 end
 
+-- ===== ZSCROOM FARMING =====
 local function farm_zscrooms()
-    library:Notify("Going to zscroom spawn...")
-    SmoothTeleport(COORDS.ZscroomSpawn)
-    task.wait(1)
-    library:Notify("Gathering zscrooms to farm spot...")
-    SmoothTeleport(COORDS.ZscroomFarm)
-    task.wait(1)
-    library:Notify("Farming zscrooms...")
+    library:Notify("Going to zscrooms...")
+    
+    -- Enable flight
     if Toggles.flight then
         Toggles.flight:SetValue(true)
     end
+    
+    -- Fly to zscroom spawn
+    if not fly_to_position(COORDS.ZscroomSpawn) then
+        -- If too far, use inn teleport to get closer
+        library:Notify("Too far from zscrooms - using Oresfall Inn teleport")
+        teleport_to_inn("Oresfall")
+        task.wait(2)
+        fly_to_position(COORDS.ZscroomSpawn)
+    end
+    
+    -- Fly to farm spot
+    fly_to_position(COORDS.ZscroomFarm)
+    
+    library:Notify("Farming zscrooms...")
+    
+    -- Train fist until mana unlocked
     library:Notify("Training fist until mana unlocked...")
     local mana_unlocked = false
     local fist_attempts = 0
+    
     while not mana_unlocked and fist_attempts < 100 do
         if plr.Character and FindFirstChild(plr.Character, "Mana") then
             mana_unlocked = true
             break
         end
+        
         if utility and utility.LeftClick then
             utility:LeftClick()
         end
         task.wait(0.2)
         fist_attempts = fist_attempts + 1
     end
+    
     if mana_unlocked then
         library:Notify("Mana unlocked!")
     end
+    
+    -- Auto charge mana and train
     library:Notify("Training mana with zscrooms...")
     if Toggles.AutoCharge then
         Toggles.AutoCharge:SetValue(true)
@@ -16637,176 +16730,203 @@ local function farm_zscrooms()
     if Toggles.train_climb then
         Toggles.train_climb:SetValue(true)
     end
+    
     local train_time = 60
     local start_time = tick()
+    local hits = 0
+    
     while tick() - start_time < train_time do
         if utility and utility.LeftClick then
             utility:LeftClick()
+            hits = hits + 1
+            if hits % 10 == 0 then
+                library:Notify(string.format("Trained %d times...", hits))
+            end
         end
         task.wait(0.1)
     end
+    
+    library:Notify(string.format("Completed %d hits!", hits))
+    
     if Toggles.train_climb then
         Toggles.train_climb:SetValue(false)
     end
+    
     library:Notify("Zscroom farming complete!")
     return true
 end
 
+-- ===== DAY FARM UNTIL DAY 1 =====
 local function day_farm_until_day1()
-    library:Notify("Teleporting to dayfarm spot...")
-    SmoothTeleport(COORDS.DayfarmSpot)
-    task.wait(1)
+    library:Notify("Going to dayfarm spot...")
+    
+    -- Enable flight
+    if Toggles.flight then
+        Toggles.flight:SetValue(true)
+    end
+    
+    -- Try to fly there, fallback to inn teleport if too far
+    if not fly_to_position(COORDS.DayfarmSpot) then
+        teleport_to_inn("Oresfall")
+        task.wait(2)
+        fly_to_position(COORDS.DayfarmSpot)
+    end
+    
     library:Notify("Farming until Day 1...")
     if Toggles.day_farm then
         Toggles.day_farm:SetValue(true)
     end
+    
     local current_days = utility:getPlayerDays() or 0
     while current_days < 1 do
         task.wait(10)
         current_days = utility:getPlayerDays() or 0
         library:Notify(string.format("Current days: %d", current_days))
     end
+    
     if Toggles.day_farm then
         Toggles.day_farm:SetValue(false)
     end
+    
     library:Notify("Day 1 reached!")
     return true
 end
 
 -- ===== TALK TO NPC HELPERS =====
+-- All NPC interactions now use fly_to_npc (short distance flight)
+-- For far NPCs, we use inn teleports to get close first
+
 local function talk_to_alfric()
-    library:Notify("Buying sword skills from Alfric...")
-    SmoothTeleport(COORDS.Alfric)
+    library:Notify("Flying to Alfric...")
+    fly_to_npc(COORDS.Alfric, DIALOGUE.Alfric.first)
     task.wait(0.5)
-    interact_with_npc(COORDS.Alfric, DIALOGUE.Alfric.first)
-    task.wait(0.5)
-    interact_with_npc(COORDS.Alfric, DIALOGUE.Alfric.second)
+    fly_to_npc(COORDS.Alfric, DIALOGUE.Alfric.second)
 end
 
 local function talk_to_dormin()
-    library:Notify("Helping Dormin...")
-    interact_with_npc(COORDS.Dormin, DIALOGUE.Dormin.first)
+    library:Notify("Flying to Dormin...")
+    fly_to_npc(COORDS.Dormin, DIALOGUE.Dormin.first)
 end
 
 local function talk_to_alana()
-    library:Notify("Doing Health Potion quest...")
-    interact_with_npc(COORDS.Alana, DIALOGUE.Alana.first)
+    library:Notify("Flying to Alana...")
+    fly_to_npc(COORDS.Alana, DIALOGUE.Alana.first)
     task.wait(0.5)
-    interact_with_npc(COORDS.Alana, DIALOGUE.Alana.second)
+    fly_to_npc(COORDS.Alana, DIALOGUE.Alana.second)
     task.wait(0.5)
-    interact_with_npc(COORDS.Alana, DIALOGUE.Alana.third)
+    fly_to_npc(COORDS.Alana, DIALOGUE.Alana.third)
     task.wait(0.5)
-    interact_with_npc(COORDS.Alana, DIALOGUE.Alana.fourth)
+    fly_to_npc(COORDS.Alana, DIALOGUE.Alana.fourth)
 end
 
 local function talk_to_lachesis()
-    library:Notify("Doing Lachesis quest...")
-    interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.first)
+    library:Notify("Flying to Lachesis...")
+    fly_to_npc(COORDS.Lachesis, DIALOGUE.Lachesis.first)
     task.wait(0.5)
-    interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.second)
+    fly_to_npc(COORDS.Lachesis, DIALOGUE.Lachesis.second)
     task.wait(0.5)
-    interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.third)
+    fly_to_npc(COORDS.Lachesis, DIALOGUE.Lachesis.third)
     task.wait(0.5)
-    interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.fourth)
+    fly_to_npc(COORDS.Lachesis, DIALOGUE.Lachesis.fourth)
 end
 
 local function talk_to_kothe()
-    library:Notify("Doing Kothe quest...")
-    interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.first)
+    library:Notify("Flying to Kothe...")
+    fly_to_npc(COORDS.Kothe, DIALOGUE.Kothe.first)
     task.wait(0.5)
-    interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.second)
+    fly_to_npc(COORDS.Kothe, DIALOGUE.Kothe.second)
     task.wait(0.5)
-    interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.third)
+    fly_to_npc(COORDS.Kothe, DIALOGUE.Kothe.third)
     task.wait(0.5)
-    interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.fourth)
+    fly_to_npc(COORDS.Kothe, DIALOGUE.Kothe.fourth)
 end
 
 local function talk_to_brom()
-    library:Notify("Doing Brom quest...")
-    interact_with_npc(COORDS.Brom, DIALOGUE.Brom.first)
+    library:Notify("Flying to Brom...")
+    fly_to_npc(COORDS.Brom, DIALOGUE.Brom.first)
     task.wait(0.5)
-    interact_with_npc(COORDS.Brom, DIALOGUE.Brom.second)
+    fly_to_npc(COORDS.Brom, DIALOGUE.Brom.second)
 end
 
 local function talk_to_fir()
-    library:Notify("Doing Fir quest...")
-    interact_with_npc(COORDS.Fir, DIALOGUE.Fir.first)
+    library:Notify("Flying to Fir...")
+    fly_to_npc(COORDS.Fir, DIALOGUE.Fir.first)
     task.wait(0.5)
-    interact_with_npc(COORDS.Fir, DIALOGUE.Fir.second)
+    fly_to_npc(COORDS.Fir, DIALOGUE.Fir.second)
     task.wait(0.5)
-    interact_with_npc(COORDS.Fir, DIALOGUE.Fir.third)
+    fly_to_npc(COORDS.Fir, DIALOGUE.Fir.third)
     task.wait(0.5)
-    interact_with_npc(COORDS.Fir, DIALOGUE.Fir.fourth)
+    fly_to_npc(COORDS.Fir, DIALOGUE.Fir.fourth)
 end
 
 local function talk_to_frey()
-    library:Notify("Buying Sigil Knight skills...")
-    interact_with_npc(COORDS.KnightCaptainFrey, DIALOGUE.Frey.first)
+    library:Notify("Flying to Knight Captain Frey...")
+    fly_to_npc(COORDS.KnightCaptainFrey, DIALOGUE.Frey.first)
     task.wait(0.5)
-    interact_with_npc(COORDS.KnightCaptainFrey, DIALOGUE.Frey.second)
+    fly_to_npc(COORDS.KnightCaptainFrey, DIALOGUE.Frey.second)
 end
 
 local function talk_to_jagen()
-    library:Notify("Getting ultra skill from Jagen...")
-    interact_with_npc(COORDS.Jagen, DIALOGUE.Jagen.first)
+    library:Notify("Flying to Jagen...")
+    fly_to_npc(COORDS.Jagen, DIALOGUE.Jagen.first)
     task.wait(0.5)
-    interact_with_npc(COORDS.Jagen, DIALOGUE.Jagen.second)
+    fly_to_npc(COORDS.Jagen, DIALOGUE.Jagen.second)
 end
 
 local function talk_to_draug()
-    library:Notify("Doing Draug quest...")
-    interact_with_npc(COORDS.Draug, DIALOGUE.Draug.first)
+    library:Notify("Flying to Draug...")
+    fly_to_npc(COORDS.Draug, DIALOGUE.Draug.first)
 end
 
 local function talk_to_reynauld()
-    library:Notify("Doing Reynauld quest...")
-    interact_with_npc(COORDS.Reynauld, DIALOGUE.Reynauld.first)
+    library:Notify("Flying to Reynauld...")
+    fly_to_npc(COORDS.Reynauld, DIALOGUE.Reynauld.first)
     task.wait(0.5)
-    interact_with_npc(COORDS.Reynauld, DIALOGUE.Reynauld.second)
+    fly_to_npc(COORDS.Reynauld, DIALOGUE.Reynauld.second)
 end
 
 local function talk_to_dorgoth()
-    library:Notify("Buying turnip from Dorgoth...")
-    interact_with_npc(COORDS.Dorgoth, DIALOGUE.Dorgoth.first)
+    library:Notify("Flying to Dorgoth...")
+    fly_to_npc(COORDS.Dorgoth, DIALOGUE.Dorgoth.first)
 end
 
 local function talk_to_hespe()
-    library:Notify("Doing Hespe quest...")
-    interact_with_npc(COORDS.Hespe, DIALOGUE.Hespe.first)
+    library:Notify("Flying to Hespe...")
+    fly_to_npc(COORDS.Hespe, DIALOGUE.Hespe.first)
 end
 
 local function talk_to_lerase()
-    library:Notify("Handing in ice protection to Lerase...")
-    interact_with_npc(COORDS.Lerase, DIALOGUE.Lerase.first)
+    library:Notify("Flying to Lerase...")
+    fly_to_npc(COORDS.Lerase, DIALOGUE.Lerase.first)
     task.wait(0.5)
-    interact_with_npc(COORDS.Lerase, DIALOGUE.Lerase.second)
+    fly_to_npc(COORDS.Lerase, DIALOGUE.Lerase.second)
 end
 
 local function talk_to_fanari()
-    library:Notify("Doing Fanari quest...")
-    interact_with_npc(COORDS.Fanari, DIALOGUE.Fanari.first)
+    library:Notify("Flying to Fanari...")
+    fly_to_npc(COORDS.Fanari, DIALOGUE.Fanari.first)
     task.wait(0.5)
-    interact_with_npc(COORDS.Fanari, DIALOGUE.Fanari.second)
+    fly_to_npc(COORDS.Fanari, DIALOGUE.Fanari.second)
 end
 
 local function talk_to_ria()
-    library:Notify("Finishing Ria quest...")
-    interact_with_npc(COORDS.Ria, DIALOGUE.Ria.first)
+    library:Notify("Flying to Ria...")
+    fly_to_npc(COORDS.Ria, DIALOGUE.Ria.first)
 end
 
 local function talk_to_rita()
-    library:Notify("Speaking to Rita...")
-    interact_with_npc(COORDS.Rita, DIALOGUE.Rita.first)
+    library:Notify("Flying to Rita...")
+    fly_to_npc(COORDS.Rita, DIALOGUE.Rita.first)
 end
 
 local function talk_to_renari()
-    library:Notify("Speaking to Renari...")
-    interact_with_npc(COORDS.Renari, DIALOGUE.Renari.first)
+    library:Notify("Flying to Renari...")
+    fly_to_npc(COORDS.Renari, DIALOGUE.Renari.first)
 end
 
 local function talk_to_yaalda()
-    library:Notify("Speaking to Ya'alda...")
-    interact_with_npc(COORDS.Yaalda, DIALOGUE.Yaalda.first)
+    library:Notify("Flying to Ya'alda...")
+    fly_to_npc(COORDS.Yaalda, DIALOGUE.Yaalda.first)
 end
 
 -- ===== MAIN BOT =====
@@ -16816,105 +16936,112 @@ local function start_class_progression()
         return
     end
     
-    library:Notify("=== Starting Class Progression Bot ===")
+    library:Notify("=== Starting Class Progression Bot (Hybrid Mode) ===")
+    library:Notify("Using inn teleports + flight - NO direct teleporting")
+    
+    -- Enable flight for the entire bot
+    if Toggles.flight then
+        Toggles.flight:SetValue(true)
+        library:Notify("Flight enabled for safe travel")
+    end
     
     if not loop_gain_orderly(5) then
         library:Notify("Gain Orderly failed! Need Tespian Elixirs.")
         return
     end
     
+    -- ===== STEP 1: Santorini Inn → Bronze Sword =====
     teleport_to_inn("Santorini")
     task.wait(1)
-    
-    library:Notify("Getting Bronze Sword...")
-    interact_with_npc(COORDS.BronzeSword, "Alright.")
+    library:Notify("Flying to Bronze Sword NPC...")
+    fly_to_npc(COORDS.BronzeSword, "Alright.")
     task.wait(1)
     
+    -- ===== STEP 2: Oresfall Inn → Dormin =====
     teleport_to_inn("Oresfall")
     task.wait(1)
-    
     talk_to_dormin()
     task.wait(1)
     
+    -- ===== STEP 3: Reset → Zscrooms =====
     reset_character()
     farm_zscrooms()
     
+    -- ===== STEP 4: Renova Inn → Alfric =====
     teleport_to_inn("Renova")
     task.wait(1)
-    
     talk_to_alfric()
     task.wait(1)
     
+    -- ===== STEP 5: Oresfall Inn → Alana =====
     teleport_to_inn("Oresfall")
     task.wait(1)
-    
     talk_to_alana()
     task.wait(1)
     
+    -- ===== STEP 6: Southern Sanctuary Inn → Lachesis =====
     teleport_to_inn("Southern Sanctuary")
     task.wait(1)
-    
     talk_to_lachesis()
     task.wait(1)
     
+    -- ===== STEP 7: Central Sanctuary Inn → Kothe → Frey =====
     teleport_to_inn("Central Sanctuary")
     task.wait(1)
-    
     talk_to_kothe()
     task.wait(1)
-    
     talk_to_frey()
     task.wait(1)
     
+    -- ===== STEP 8: Castle Sanctuary Inn → Draug → Dorgoth → Reynauld =====
     teleport_to_inn("Castle Sanctuary")
     task.wait(1)
-    
     talk_to_draug()
     task.wait(1)
-    
     talk_to_dorgoth()
     task.wait(1)
-    
     talk_to_reynauld()
     task.wait(1)
     
+    -- ===== STEP 9: Southern Sanctuary Inn → Hespe =====
     teleport_to_inn("Southern Sanctuary")
     task.wait(1)
-    
     talk_to_hespe()
     task.wait(1)
     
+    -- ===== STEP 10: Wayside Inn → Brom =====
     teleport_to_inn("Wayside")
     task.wait(1)
-    
     talk_to_brom()
     task.wait(1)
     
+    -- ===== STEP 11: Santorini Inn → Fir =====
     teleport_to_inn("Santorini")
     task.wait(1)
-    
     talk_to_fir()
     task.wait(1)
     
+    -- ===== STEP 12: Reset → Day Farm =====
     reset_character()
     day_farm_until_day1()
     
+    -- ===== STEP 13: Oresfall Inn → Hendrick =====
     teleport_to_inn("Oresfall")
     task.wait(1)
-    
-    library:Notify("Handing in turnip to Hendrick...")
-    interact_with_npc(COORDS.Hendrick, "Hand in turnip")
+    library:Notify("Flying to Hendrick...")
+    fly_to_npc(COORDS.Hendrick, "Hand in turnip")
     task.wait(1)
     
+    -- ===== STEP 14: Reset → Dormin → Lerase =====
     reset_character()
     talk_to_dormin()
     task.wait(1)
-    
     talk_to_lerase()
     task.wait(1)
     
-    library:Notify("Going to Skycastle...")
-    SmoothTeleport(COORDS.SkycastleTP)
+    -- ===== STEP 15: Skycastle → Rita → Renari → Fanari =====
+    library:Notify("Flying to Skycastle...")
+    fly_to_position(COORDS.SkycastleTP)
     task.wait(0.5)
     talk_to_rita()
     task.wait(0.5)
@@ -16923,40 +17050,39 @@ local function start_class_progression()
     talk_to_fanari()
     task.wait(1)
     
+    -- ===== STEP 16: Flowerlight Town Inn → Ria =====
     teleport_to_inn("Flowerlight Town")
     task.wait(1)
-    
     talk_to_ria()
     task.wait(1)
     
+    -- ===== STEP 17: Castle Sanctuary Inn → Jagen =====
     teleport_to_inn("Castle Sanctuary")
     task.wait(1)
-    
     talk_to_jagen()
     task.wait(1)
     
+    -- ===== STEP 18: Ya'alda =====
     talk_to_yaalda()
     
     library:Notify("=== Class Progression Complete! ===")
 end
 
 -- ===== ADD BUTTONS TO UI =====
--- Wait for group_trinket_bot to be available
 task.spawn(function()
     while not group_trinket_bot do
         task.wait(0.1)
     end
     
-    -- Now add the buttons
     group_trinket_bot:AddDivider()
-    group_trinket_bot:AddLabel("=== CLASS PROGRESSION BOT ===")
+    group_trinket_bot:AddLabel("=== CLASS PROGRESSION BOT (HYBRID) ===")
     
     group_trinket_bot:AddButton({
         Text = "Start Class Progression",
         Func = function()
             task.spawn(start_class_progression)
         end,
-        Tooltip = "Complete class progression (requires 5 Tespian Elixirs)"
+        Tooltip = "Complete class progression using inn teleports + flight (requires 5 Tespian Elixirs)"
     })
     
     group_trinket_bot:AddButton({
@@ -16977,7 +17103,8 @@ task.spawn(function()
         Tooltip = "Test zscroom farming section only"
     })
     
-    library:Notify("Class Progression Bot loaded!")
+    library:Notify("Class Progression Bot (Hybrid Mode) loaded!")
+    library:Notify("Uses: Inn Teleports (safe) + Flight (short distances)")
 end)
 
             group_trinket_bot:AddInput("PointWaitTime", {
