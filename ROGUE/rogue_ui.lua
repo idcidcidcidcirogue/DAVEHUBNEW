@@ -16425,748 +16425,755 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             end
 
             local group_trinket_bot = Tabs.Botting:AddLeftGroupbox("Trinket Bot")
-            -- ============================================
-            -- COMPLETE CLASS PROGRESSION BOT - GAIA
-            -- WITH ALL CORRECT DIALOGUE OPTIONS
-            -- ============================================
 
-            -- ===== DIALOGUE OPTIONS =====
-            local DIALOGUE = {
-                -- Alfric (Warrior training)
-                Alfric = {
-                    first = "Yeah.",
-                    second = "I'll pay.",
-                },
-                
-                -- Dormin (Homeless Man)
-                Dormin = {
-                    first = "Of course.",
-                },
-                
-                -- Alana (Health Potion quest)
-                Alana = {
-                    first = "What's wrong?",
-                    second = "I'm here to help.",
-                    third = "I'm sorry to hear that.",
-                    fourth = "Of course.",
-                },
-                
-                -- Lachesis (Tespian Elixir quest)
-                Lachesis = {
-                    first = "What's the matter?",
-                    second = "It's no problem. Can I help?",
-                    third = "Is it a Scroom?",
-                    fourth = "Glad to help.",
-                },
-                
-                -- Kothe (Central Sanctuary quest)
-                Kothe = {
-                    first = "What's wrong?",
-                    second = "Can I help?",
-                    third = "There's something else I can help with, then?",
-                    fourth = "Is this it?",
-                },
-                
-                -- Brom (Merchant quest)
-                Brom = {
-                    first = "You're a merchant?",
-                    second = "If I see her.",
-                },
-                
-                -- Fir (Delivery quest)
-                Fir = {
-                    first = "What's wrong?",
-                    second = "Do you mean Brom?",
-                    third = "Yeah, I saw him earlier.",
-                    fourth = "He broke down. There will be a delay.",
-                },
-                
-                -- Knight Captain Frey (Sigil Knight)
-                Frey = {
-                    first = "Is there anything you can teach me?",
-                    second = "I'll pay.",
-                },
-                
-                -- Jagen (Sigil Knight Commander / Ultra)
-                Jagen = {
-                    first = "Please teach me.",
-                    second = "Here is 250 Silver.",
-                },
-                
-                -- Draug (Castle Sanctuary quest)
-                Draug = {
-                    first = "Thank you.",
-                },
-                
-                -- Reynauld (Quest)
-                Reynauld = {
-                    first = "Hello?",
-                    second = "Sir?",
-                },
-                
-                -- Dorgoth (Turnip seller)
-                Dorgoth = {
-                    first = "Alright.",
-                },
-                
-                -- Fanari (Flower quest)
-                Fanari = {
-                    first = "What is it?",
-                    second = "Sure.",
-                },
-                
-                -- Ria (Flower delivery)
-                Ria = {
-                    first = "I'll pay.",
-                },
-                
-                -- Rita (Skycastle)
-                Rita = {
-                    first = "Sure.",
-                },
-                
-                -- Renari (Skycastle)
-                Renari = {
-                    first = "Yeah",
-                },
-                
-                -- Hespe (Quest completion)
-                Hespe = {
-                    first = "A man told me to bring this to you.",
-                },
-                
-                -- Lerase (Ice protection hand-in)
-                Lerase = {
-                    first = "Sure.",
-                    second = "Here it is.",
-                },
-                
-                -- Ya'alda (Final)
-                Yaalda = {
-                    first = "...",
-                },
-            }
+-- ============================================
+-- COMPLETE CLASS PROGRESSION BOT - GAIA
+-- FIXED VERSION - ADD THIS AFTER THE GROUP IS CREATED
+-- ============================================
 
-            -- ===== COORDINATES =====
-            local COORDS = {
-                -- NPC locations
-                BronzeSword = Vector3.new(1615.2, 423.2, 2780.7),
-                Dormin = Vector3.new(2853.8, 288.0, 76.3),
-                Alfric = Vector3.new(-1802.3, 315.8, -226.6),
-                Alana = Vector3.new(2810.9, 303.7, -28.9),
-                Lachesis = Vector3.new(-1291.3, 143.9, 327.2),
-                Kothe = Vector3.new(1924.7, 258.5, -850.4),
-                KnightCaptainFrey = Vector3.new(1954.4, 309.0, -831.2),
-                Draug = Vector3.new(6148.4, 1344.3, 118.0),
-                Dorgoth = Vector3.new(6136.1, 1344.3, 91.8),
-                Reynauld = Vector3.new(4954.0, 544.4, -898.3),
-                Hespe = Vector3.new(-281.8, 491.5, 935.9),
-                Brom = Vector3.new(1396.6, 287.7, 1706.8),
-                Fir = Vector3.new(1518.6, 455.7, 2941.8),
-                Hendrick = Vector3.new(2406.5, 59.1, 448.7),
-                Lerase = Vector3.new(3023.7, 287.7, -34.4),
-                Rita = Vector3.new(180.6, 3777.1, 167.1),
-                Renari = Vector3.new(417.2, 3735.4, -39.2),
-                Fanari = Vector3.new(508.3, 3703.4, -49.6),
-                Ria = Vector3.new(3309.8, 202.4, -2519.8),
-                Jagen = Vector3.new(6854.9, 1411.5, -160.0),
-                Yaalda = Vector3.new(1024.5, -558.0, -4757.8),
-                SkycastleTP = Vector3.new(-207.8, 3784.4, 141.2),
-                
-                -- Farming locations
-                ZscroomSpawn = Vector3.new(2086.4, 141.4, -1601.2),
-                ZscroomFarm = Vector3.new(1994.4, 143.4, -2277.0),
-                DayfarmSpot = Vector3.new(1168.4, 122.0, 3494.8),
-            }
+-- Find this in the script:
+-- local group_trinket_bot = Tabs.Botting:AddLeftGroupbox("Trinket Bot")
 
-            -- ===== INN TELEPORT =====
-            local function teleport_to_inn(inn_name)
-                library:Notify("Teleporting to " .. inn_name .. " Inn...")
-                
-                local dialogue_response = (inn_name == "Flowerlight Town") and "A room, please." or "Sure."
-                
-                local inn_keeper
-                if inn_name == "Flowerlight Town" then
-                    inn_keeper = FindFirstChild(workspace.NPCs, "Ria")
-                elseif inn_name == "Scroomville" then
-                    inn_keeper = FindFirstChild(workspace.NPCs, "Fungkeeper")
-                else
-                    for _, npc in next, workspace.NPCs:GetChildren() do
-                        if npc.Name == "Inn Keeper" and FindFirstChild(npc, "Location") and npc.Location.Value == inn_name then
-                            inn_keeper = npc
-                            break
-                        end
-                    end
-                end
-                
-                if not inn_keeper then
-                    library:Notify("Inn keeper not found at " .. inn_name)
-                    return false
-                end
-                
-                local hrp = plr.Character.HumanoidRootPart
-                for i = 1, 3 do
-                    if plr.Character and hrp then
-                        plr.Character:PivotTo(inn_keeper:GetPivot())
-                        hrp.Velocity = Vector3.zero
-                        
-                        if (hrp.Position - inn_keeper.HumanoidRootPart.Position).Magnitude <= 10 then
-                            local click_detector = FindFirstChildWhichIsA(inn_keeper, "ClickDetector", true)
-                            if click_detector then
-                                fireclickdetector(click_detector)
-                            end
-                        end
-                        
-                        if dialogue_remote then
-                            dialogue_remote:FireServer({choice = dialogue_response})
-                        end
-                    end
-                    task.wait(0.5)
-                end
-                
-                task.wait(3)
-                return true
+-- Add ALL of this code AFTER that line (right after the group is created)
+
+-- ===== DIALOGUE OPTIONS =====
+local DIALOGUE = {
+    -- Alfric (Warrior training)
+    Alfric = {
+        first = "Yeah.",
+        second = "I'll pay.",
+    },
+    
+    -- Dormin (Homeless Man)
+    Dormin = {
+        first = "Of course.",
+    },
+    
+    -- Alana (Health Potion quest)
+    Alana = {
+        first = "What's wrong?",
+        second = "I'm here to help.",
+        third = "I'm sorry to hear that.",
+        fourth = "Of course.",
+    },
+    
+    -- Lachesis (Tespian Elixir quest)
+    Lachesis = {
+        first = "What's the matter?",
+        second = "It's no problem. Can I help?",
+        third = "Is it a Scroom?",
+        fourth = "Glad to help.",
+    },
+    
+    -- Kothe (Central Sanctuary quest)
+    Kothe = {
+        first = "What's wrong?",
+        second = "Can I help?",
+        third = "There's something else I can help with, then?",
+        fourth = "Is this it?",
+    },
+    
+    -- Brom (Merchant quest)
+    Brom = {
+        first = "You're a merchant?",
+        second = "If I see her.",
+    },
+    
+    -- Fir (Delivery quest)
+    Fir = {
+        first = "What's wrong?",
+        second = "Do you mean Brom?",
+        third = "Yeah, I saw him earlier.",
+        fourth = "He broke down. There will be a delay.",
+    },
+    
+    -- Knight Captain Frey (Sigil Knight)
+    Frey = {
+        first = "Is there anything you can teach me?",
+        second = "I'll pay.",
+    },
+    
+    -- Jagen (Sigil Knight Commander / Ultra)
+    Jagen = {
+        first = "Please teach me.",
+        second = "Here is 250 Silver.",
+    },
+    
+    -- Draug (Castle Sanctuary quest)
+    Draug = {
+        first = "Thank you.",
+    },
+    
+    -- Reynauld (Quest)
+    Reynauld = {
+        first = "Hello?",
+        second = "Sir?",
+    },
+    
+    -- Dorgoth (Turnip seller)
+    Dorgoth = {
+        first = "Alright.",
+    },
+    
+    -- Fanari (Flower quest)
+    Fanari = {
+        first = "What is it?",
+        second = "Sure.",
+    },
+    
+    -- Ria (Flower delivery)
+    Ria = {
+        first = "I'll pay.",
+    },
+    
+    -- Rita (Skycastle)
+    Rita = {
+        first = "Sure.",
+    },
+    
+    -- Renari (Skycastle)
+    Renari = {
+        first = "Yeah",
+    },
+    
+    -- Hespe (Quest completion)
+    Hespe = {
+        first = "A man told me to bring this to you.",
+    },
+    
+    -- Lerase (Ice protection hand-in)
+    Lerase = {
+        first = "Sure.",
+        second = "Here it is.",
+    },
+    
+    -- Ya'alda (Final)
+    Yaalda = {
+        first = "...",
+    },
+}
+
+-- ===== COORDINATES =====
+local COORDS = {
+    -- NPC locations
+    BronzeSword = Vector3.new(1615.2, 423.2, 2780.7),
+    Dormin = Vector3.new(2853.8, 288.0, 76.3),
+    Alfric = Vector3.new(-1802.3, 315.8, -226.6),
+    Alana = Vector3.new(2810.9, 303.7, -28.9),
+    Lachesis = Vector3.new(-1291.3, 143.9, 327.2),
+    Kothe = Vector3.new(1924.7, 258.5, -850.4),
+    KnightCaptainFrey = Vector3.new(1954.4, 309.0, -831.2),
+    Draug = Vector3.new(6148.4, 1344.3, 118.0),
+    Dorgoth = Vector3.new(6136.1, 1344.3, 91.8),
+    Reynauld = Vector3.new(4954.0, 544.4, -898.3),
+    Hespe = Vector3.new(-281.8, 491.5, 935.9),
+    Brom = Vector3.new(1396.6, 287.7, 1706.8),
+    Fir = Vector3.new(1518.6, 455.7, 2941.8),
+    Hendrick = Vector3.new(2406.5, 59.1, 448.7),
+    Lerase = Vector3.new(3023.7, 287.7, -34.4),
+    Rita = Vector3.new(180.6, 3777.1, 167.1),
+    Renari = Vector3.new(417.2, 3735.4, -39.2),
+    Fanari = Vector3.new(508.3, 3703.4, -49.6),
+    Ria = Vector3.new(3309.8, 202.4, -2519.8),
+    Jagen = Vector3.new(6854.9, 1411.5, -160.0),
+    Yaalda = Vector3.new(1024.5, -558.0, -4757.8),
+    SkycastleTP = Vector3.new(-207.8, 3784.4, 141.2),
+    
+    -- Farming locations
+    ZscroomSpawn = Vector3.new(2086.4, 141.4, -1601.2),
+    ZscroomFarm = Vector3.new(1994.4, 143.4, -2277.0),
+    DayfarmSpot = Vector3.new(1168.4, 122.0, 3494.8),
+}
+
+-- ===== NPC INTERACTION =====
+local function interact_with_npc(npc_pos, dialogue_option, wait_time)
+    wait_time = wait_time or 2
+    
+    if not plr.Character or not FindFirstChild(plr.Character, "HumanoidRootPart") then
+        library:Notify("Character not found!")
+        return false
+    end
+    
+    SmoothTeleport(npc_pos)
+    task.wait(0.5)
+    
+    local click_detector = nil
+    
+    for _, v in next, workspace.NPCs:GetChildren() do
+        local hrp = FindFirstChild(v, "HumanoidRootPart")
+        if hrp then
+            local dist = (hrp.Position - npc_pos).Magnitude
+            if dist < 30 then
+                click_detector = FindFirstChildWhichIsA(v, "ClickDetector", true)
+                break
             end
+        end
+    end
+    
+    if not click_detector then
+        for _, part in pairs(workspace:GetDescendants()) do
+            if part:IsA("ClickDetector") and part.Parent and part.Parent:IsA("Model") then
+                local hrp = FindFirstChild(part.Parent, "HumanoidRootPart")
+                if hrp and (hrp.Position - npc_pos).Magnitude < 30 then
+                    click_detector = part
+                    break
+                end
+            end
+        end
+    end
+    
+    if click_detector then
+        fireclickdetector(click_detector)
+        task.wait(0.5)
+    end
+    
+    if dialogue_remote and dialogue_option then
+        dialogue_remote:FireServer({choice = dialogue_option})
+        task.wait(wait_time)
+    end
+    
+    return true
+end
 
-            -- ===== NPC INTERACTION =====
-            local function interact_with_npc(npc_pos, dialogue_option, wait_time)
-                wait_time = wait_time or 2
+-- ===== NPC INTERACTION HELPERS =====
+local function talk_to_alfric()
+    library:Notify("Buying sword skills from Alfric...")
+    SmoothTeleport(COORDS.Alfric)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Alfric, DIALOGUE.Alfric.first)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Alfric, DIALOGUE.Alfric.second)
+end
+
+local function talk_to_dormin()
+    library:Notify("Helping Dormin...")
+    interact_with_npc(COORDS.Dormin, DIALOGUE.Dormin.first)
+end
+
+local function talk_to_alana()
+    library:Notify("Doing Health Potion quest...")
+    interact_with_npc(COORDS.Alana, DIALOGUE.Alana.first)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Alana, DIALOGUE.Alana.second)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Alana, DIALOGUE.Alana.third)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Alana, DIALOGUE.Alana.fourth)
+end
+
+local function talk_to_lachesis()
+    library:Notify("Doing Lachesis quest...")
+    interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.first)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.second)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.third)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.fourth)
+end
+
+local function talk_to_kothe()
+    library:Notify("Doing Kothe quest...")
+    interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.first)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.second)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.third)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.fourth)
+end
+
+local function talk_to_brom()
+    library:Notify("Doing Brom quest...")
+    interact_with_npc(COORDS.Brom, DIALOGUE.Brom.first)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Brom, DIALOGUE.Brom.second)
+end
+
+local function talk_to_fir()
+    library:Notify("Doing Fir quest...")
+    interact_with_npc(COORDS.Fir, DIALOGUE.Fir.first)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Fir, DIALOGUE.Fir.second)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Fir, DIALOGUE.Fir.third)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Fir, DIALOGUE.Fir.fourth)
+end
+
+local function talk_to_frey()
+    library:Notify("Buying Sigil Knight skills...")
+    interact_with_npc(COORDS.KnightCaptainFrey, DIALOGUE.Frey.first)
+    task.wait(0.5)
+    interact_with_npc(COORDS.KnightCaptainFrey, DIALOGUE.Frey.second)
+end
+
+local function talk_to_jagen()
+    library:Notify("Getting ultra skill from Jagen...")
+    interact_with_npc(COORDS.Jagen, DIALOGUE.Jagen.first)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Jagen, DIALOGUE.Jagen.second)
+end
+
+local function talk_to_draug()
+    library:Notify("Doing Draug quest...")
+    interact_with_npc(COORDS.Draug, DIALOGUE.Draug.first)
+end
+
+local function talk_to_reynauld()
+    library:Notify("Doing Reynauld quest...")
+    interact_with_npc(COORDS.Reynauld, DIALOGUE.Reynauld.first)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Reynauld, DIALOGUE.Reynauld.second)
+end
+
+local function talk_to_dorgoth()
+    library:Notify("Buying turnip from Dorgoth...")
+    interact_with_npc(COORDS.Dorgoth, DIALOGUE.Dorgoth.first)
+end
+
+local function talk_to_hespe()
+    library:Notify("Doing Hespe quest...")
+    interact_with_npc(COORDS.Hespe, DIALOGUE.Hespe.first)
+end
+
+local function talk_to_lerase()
+    library:Notify("Handing in ice protection to Lerase...")
+    interact_with_npc(COORDS.Lerase, DIALOGUE.Lerase.first)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Lerase, DIALOGUE.Lerase.second)
+end
+
+local function talk_to_fanari()
+    library:Notify("Doing Fanari quest...")
+    interact_with_npc(COORDS.Fanari, DIALOGUE.Fanari.first)
+    task.wait(0.5)
+    interact_with_npc(COORDS.Fanari, DIALOGUE.Fanari.second)
+end
+
+local function talk_to_ria()
+    library:Notify("Finishing Ria quest...")
+    interact_with_npc(COORDS.Ria, DIALOGUE.Ria.first)
+end
+
+local function talk_to_rita()
+    library:Notify("Speaking to Rita...")
+    interact_with_npc(COORDS.Rita, DIALOGUE.Rita.first)
+end
+
+local function talk_to_renari()
+    library:Notify("Speaking to Renari...")
+    interact_with_npc(COORDS.Renari, DIALOGUE.Renari.first)
+end
+
+local function talk_to_yaalda()
+    library:Notify("Speaking to Ya'alda...")
+    interact_with_npc(COORDS.Yaalda, DIALOGUE.Yaalda.first)
+end
+
+-- ===== RESET CHARACTER =====
+local function reset_character()
+    library:Notify("Resetting character...")
+    if plr.Character then
+        plr.Character:BreakJoints()
+    end
+    task.wait(3)
+    
+    while not (plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")) do
+        task.wait(0.5)
+    end
+    task.wait(1)
+    return true
+end
+
+-- ===== GAIN ORDERLY LOOP =====
+local function loop_gain_orderly(times)
+    times = times or 5
+    library:Notify(string.format("Starting Gain Orderly loop (%d times)...", times))
+    
+    local completed = 0
+    
+    for attempt = 1, times * 2 do
+        if completed >= times then break end
+        
+        if not plr.Character or not FindFirstChild(plr.Character, "HumanoidRootPart") then
+            return false
+        end
+        
+        local elixir = FindFirstChild(plr.Backpack, "Tespian Elixir")
+        if not elixir then
+            library:Notify("Out of Tespian Elixir!")
+            return false
+        end
+        
+        if cs:HasTag(plr.Character, "Danger") then
+            repeat task.wait(0.5) until not cs:HasTag(plr.Character, "Danger")
+        end
+        
+        local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:EquipTool(elixir)
+            task.wait(0.3)
+            
+            local equipped = FindFirstChild(plr.Character, "Tespian Elixir")
+            if equipped and FindFirstChild(equipped, "RemoteEvent") then
+                equipped.RemoteEvent:FireServer(plr.Character.HumanoidRootPart.CFrame, "Part", "Self")
+                library:Notify(string.format("Gain Orderly %d/%d", completed + 1, times))
+                task.wait(2)
                 
-                if not plr.Character or not FindFirstChild(plr.Character, "HumanoidRootPart") then
-                    library:Notify("Character not found!")
-                    return false
+                if FindFirstChild(plr.Character, "Immortal") then
+                    completed = completed + 1
+                    library:Notify(string.format("Gain Orderly completed! (%d/%d)", completed, times))
                 end
-                
-                SmoothTeleport(npc_pos)
-                task.wait(0.5)
-                
-                local click_detector = nil
-                
-                for _, v in next, workspace.NPCs:GetChildren() do
-                    local hrp = FindFirstChild(v, "HumanoidRootPart")
-                    if hrp then
-                        local dist = (hrp.Position - npc_pos).Magnitude
-                        if dist < 30 then
-                            click_detector = FindFirstChildWhichIsA(v, "ClickDetector", true)
-                            break
-                        end
-                    end
-                end
-                
-                if not click_detector then
-                    for _, part in pairs(workspace:GetDescendants()) do
-                        if part:IsA("ClickDetector") and part.Parent and part.Parent:IsA("Model") then
-                            local hrp = FindFirstChild(part.Parent, "HumanoidRootPart")
-                            if hrp and (hrp.Position - npc_pos).Magnitude < 30 then
-                                click_detector = part
-                                break
-                            end
-                        end
-                    end
-                end
-                
+            end
+        end
+        task.wait(0.5)
+    end
+    
+    return completed >= times
+end
+
+-- ===== ZSCROOM FARMING =====
+local function farm_zscrooms()
+    library:Notify("Going to zscroom spawn...")
+    SmoothTeleport(COORDS.ZscroomSpawn)
+    task.wait(1)
+    
+    library:Notify("Gathering zscrooms to farm spot...")
+    SmoothTeleport(COORDS.ZscroomFarm)
+    task.wait(1)
+    
+    library:Notify("Farming zscrooms...")
+    
+    if Toggles.flight then
+        Toggles.flight:SetValue(true)
+    end
+    
+    library:Notify("Training fist until mana unlocked...")
+    local mana_unlocked = false
+    local fist_attempts = 0
+    
+    while not mana_unlocked and fist_attempts < 100 do
+        if plr.Character and FindFirstChild(plr.Character, "Mana") then
+            mana_unlocked = true
+            break
+        end
+        
+        if utility and utility.LeftClick then
+            utility:LeftClick()
+        end
+        task.wait(0.2)
+        fist_attempts = fist_attempts + 1
+    end
+    
+    if mana_unlocked then
+        library:Notify("Mana unlocked!")
+    end
+    
+    library:Notify("Training mana with zscrooms...")
+    if Toggles.AutoCharge then
+        Toggles.AutoCharge:SetValue(true)
+    end
+    if Toggles.train_climb then
+        Toggles.train_climb:SetValue(true)
+    end
+    
+    local train_time = 60
+    local start_time = tick()
+    while tick() - start_time < train_time do
+        if utility and utility.LeftClick then
+            utility:LeftClick()
+        end
+        task.wait(0.1)
+    end
+    
+    if Toggles.train_climb then
+        Toggles.train_climb:SetValue(false)
+    end
+    
+    library:Notify("Zscroom farming complete!")
+    return true
+end
+
+-- ===== DAY FARM UNTIL DAY 1 =====
+local function day_farm_until_day1()
+    library:Notify("Teleporting to dayfarm spot...")
+    SmoothTeleport(COORDS.DayfarmSpot)
+    task.wait(1)
+    
+    library:Notify("Farming until Day 1...")
+    if Toggles.day_farm then
+        Toggles.day_farm:SetValue(true)
+    end
+    
+    local current_days = utility:getPlayerDays() or 0
+    while current_days < 1 do
+        task.wait(10)
+        current_days = utility:getPlayerDays() or 0
+        library:Notify(string.format("Current days: %d", current_days))
+    end
+    
+    if Toggles.day_farm then
+        Toggles.day_farm:SetValue(false)
+    end
+    
+    library:Notify("Day 1 reached!")
+    return true
+end
+
+-- ===== INN TELEPORT =====
+local function teleport_to_inn(inn_name)
+    library:Notify("Teleporting to " .. inn_name .. " Inn...")
+    
+    local dialogue_response = (inn_name == "Flowerlight Town") and "A room, please." or "Sure."
+    
+    local inn_keeper
+    if inn_name == "Flowerlight Town" then
+        inn_keeper = FindFirstChild(workspace.NPCs, "Ria")
+    elseif inn_name == "Scroomville" then
+        inn_keeper = FindFirstChild(workspace.NPCs, "Fungkeeper")
+    else
+        for _, npc in next, workspace.NPCs:GetChildren() do
+            if npc.Name == "Inn Keeper" and FindFirstChild(npc, "Location") and npc.Location.Value == inn_name then
+                inn_keeper = npc
+                break
+            end
+        end
+    end
+    
+    if not inn_keeper then
+        library:Notify("Inn keeper not found at " .. inn_name)
+        return false
+    end
+    
+    local hrp = plr.Character.HumanoidRootPart
+    for i = 1, 3 do
+        if plr.Character and hrp then
+            plr.Character:PivotTo(inn_keeper:GetPivot())
+            hrp.Velocity = Vector3.zero
+            
+            if (hrp.Position - inn_keeper.HumanoidRootPart.Position).Magnitude <= 10 then
+                local click_detector = FindFirstChildWhichIsA(inn_keeper, "ClickDetector", true)
                 if click_detector then
                     fireclickdetector(click_detector)
-                    task.wait(0.5)
                 end
-                
-                if dialogue_remote and dialogue_option then
-                    dialogue_remote:FireServer({choice = dialogue_option})
-                    task.wait(wait_time)
-                end
-                
-                return true
             end
-
-            -- ===== NPC INTERACTION HELPERS =====
-            local function talk_to_alfric()
-                library:Notify("Buying sword skills from Alfric...")
-                SmoothTeleport(COORDS.Alfric)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Alfric, DIALOGUE.Alfric.first)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Alfric, DIALOGUE.Alfric.second)
+            
+            if dialogue_remote then
+                dialogue_remote:FireServer({choice = dialogue_response})
             end
+        end
+        task.wait(0.5)
+    end
+    
+    task.wait(3)
+    return true
+end
 
-            local function talk_to_dormin()
-                library:Notify("Helping Dormin...")
-                interact_with_npc(COORDS.Dormin, DIALOGUE.Dormin.first)
-            end
+-- ===== MAIN BOT EXECUTION =====
+local function start_class_progression()
+    if trinket_bot.path_running then
+        library:Notify("Bot already running!")
+        return
+    end
+    
+    library:Notify("=== Starting Class Progression Bot ===")
+    
+    -- ===== STEP 1: Loop Gain Orderly 5 times =====
+    if not loop_gain_orderly(5) then
+        library:Notify("Gain Orderly failed! Need Tespian Elixirs.")
+        return
+    end
+    
+    -- ===== STEP 2: Teleport to Santorini Inn =====
+    teleport_to_inn("Santorini")
+    task.wait(1)
+    
+    -- ===== STEP 3: Bronze Sword NPC =====
+    library:Notify("Getting Bronze Sword...")
+    interact_with_npc(COORDS.BronzeSword, "Alright.")
+    task.wait(1)
+    
+    -- ===== STEP 4: Teleport to Oresfall Inn =====
+    teleport_to_inn("Oresfall")
+    task.wait(1)
+    
+    -- ===== STEP 5: Dormin =====
+    talk_to_dormin()
+    task.wait(1)
+    
+    -- ===== STEP 6: Reset =====
+    reset_character()
+    
+    -- ===== STEP 7: Zscroom farming =====
+    farm_zscrooms()
+    
+    -- ===== STEP 8: Teleport to Renova Inn =====
+    teleport_to_inn("Renova")
+    task.wait(1)
+    
+    -- ===== STEP 9: Alfric =====
+    talk_to_alfric()
+    task.wait(1)
+    
+    -- ===== STEP 10: Teleport to Oresfall Inn =====
+    teleport_to_inn("Oresfall")
+    task.wait(1)
+    
+    -- ===== STEP 11: Alana =====
+    talk_to_alana()
+    task.wait(1)
+    
+    -- ===== STEP 12: Teleport to Southern Sanctuary Inn =====
+    teleport_to_inn("Southern Sanctuary")
+    task.wait(1)
+    
+    -- ===== STEP 13: Lachesis =====
+    talk_to_lachesis()
+    task.wait(1)
+    
+    -- ===== STEP 14: Teleport to Central Sanctuary =====
+    teleport_to_inn("Central Sanctuary")
+    task.wait(1)
+    
+    -- ===== STEP 15: Kothe =====
+    talk_to_kothe()
+    task.wait(1)
+    
+    -- ===== STEP 16: Knight Captain Frey =====
+    talk_to_frey()
+    task.wait(1)
+    
+    -- ===== STEP 17: Teleport to Castle Sanctuary Inn =====
+    teleport_to_inn("Castle Sanctuary")
+    task.wait(1)
+    
+    -- ===== STEP 18: Draug =====
+    talk_to_draug()
+    task.wait(1)
+    
+    -- ===== STEP 19: Dorgoth =====
+    talk_to_dorgoth()
+    task.wait(1)
+    
+    -- ===== STEP 20: Reynauld =====
+    talk_to_reynauld()
+    task.wait(1)
+    
+    -- ===== STEP 21: Teleport to Southern Sanctuary Inn =====
+    teleport_to_inn("Southern Sanctuary")
+    task.wait(1)
+    
+    -- ===== STEP 22: Hespe =====
+    talk_to_hespe()
+    task.wait(1)
+    
+    -- ===== STEP 23: Teleport to Wayside Inn =====
+    teleport_to_inn("Wayside")
+    task.wait(1)
+    
+    -- ===== STEP 24: Brom =====
+    talk_to_brom()
+    task.wait(1)
+    
+    -- ===== STEP 25: Teleport to Santorini Inn =====
+    teleport_to_inn("Santorini")
+    task.wait(1)
+    
+    -- ===== STEP 26: Fir =====
+    talk_to_fir()
+    task.wait(1)
+    
+    -- ===== STEP 27: Reset =====
+    reset_character()
+    
+    -- ===== STEP 28: Day farm until Day 1 =====
+    day_farm_until_day1()
+    
+    -- ===== STEP 29: Teleport to Oresfall Inn =====
+    teleport_to_inn("Oresfall")
+    task.wait(1)
+    
+    -- ===== STEP 30: Hendrick =====
+    library:Notify("Handing in turnip to Hendrick...")
+    interact_with_npc(COORDS.Hendrick, "Hand in turnip")
+    task.wait(1)
+    
+    -- ===== STEP 31: Reset =====
+    reset_character()
+    
+    -- ===== STEP 32: Dormin again =====
+    talk_to_dormin()
+    task.wait(1)
+    
+    -- ===== STEP 33: Lerase =====
+    talk_to_lerase()
+    task.wait(1)
+    
+    -- ===== STEP 34: Skycastle =====
+    library:Notify("Going to Skycastle...")
+    SmoothTeleport(COORDS.SkycastleTP)
+    task.wait(0.5)
+    talk_to_rita()
+    task.wait(0.5)
+    talk_to_renari()
+    task.wait(0.5)
+    talk_to_fanari()
+    task.wait(1)
+    
+    -- ===== STEP 35: Teleport to Flowerlight Town Inn =====
+    teleport_to_inn("Flowerlight Town")
+    task.wait(1)
+    
+    -- ===== STEP 36: Ria =====
+    talk_to_ria()
+    task.wait(1)
+    
+    -- ===== STEP 37: Teleport to Castle Sanctuary =====
+    teleport_to_inn("Castle Sanctuary")
+    task.wait(1)
+    
+    -- ===== STEP 38: Jagen =====
+    talk_to_jagen()
+    task.wait(1)
+    
+    -- ===== STEP 39: Ya'alda =====
+    talk_to_yaalda()
+    
+    library:Notify("=== Class Progression Complete! ===")
+end
 
-            local function talk_to_alana()
-                library:Notify("Doing Health Potion quest...")
-                interact_with_npc(COORDS.Alana, DIALOGUE.Alana.first)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Alana, DIALOGUE.Alana.second)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Alana, DIALOGUE.Alana.third)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Alana, DIALOGUE.Alana.fourth)
-            end
+-- ===== ADD GUI BUTTONS (AFTER group_trinket_bot is created) =====
+-- These should go right after group_trinket_bot is defined
 
-            local function talk_to_lachesis()
-                library:Notify("Doing Lachesis quest...")
-                interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.first)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.second)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.third)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.fourth)
-            end
+group_trinket_bot:AddDivider()
+group_trinket_bot:AddLabel("=== CLASS PROGRESSION BOT ===")
 
-            local function talk_to_kothe()
-                library:Notify("Doing Kothe quest...")
-                interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.first)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.second)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.third)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.fourth)
-            end
+group_trinket_bot:AddButton({
+    Text = "Start Class Progression",
+    Func = function()
+        task.spawn(start_class_progression)
+    end,
+    Tooltip = "Complete class progression (requires 5 Tespian Elixirs)"
+})
 
-            local function talk_to_brom()
-                library:Notify("Doing Brom quest...")
-                interact_with_npc(COORDS.Brom, DIALOGUE.Brom.first)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Brom, DIALOGUE.Brom.second)
-            end
+group_trinket_bot:AddButton({
+    Text = "Loop Gain Orderly Only",
+    Func = function()
+        task.spawn(function()
+            loop_gain_orderly(5)
+        end)
+    end,
+    Tooltip = "Only loops Gain Orderly 5 times"
+})
 
-            local function talk_to_fir()
-                library:Notify("Doing Fir quest...")
-                interact_with_npc(COORDS.Fir, DIALOGUE.Fir.first)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Fir, DIALOGUE.Fir.second)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Fir, DIALOGUE.Fir.third)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Fir, DIALOGUE.Fir.fourth)
-            end
-
-            local function talk_to_frey()
-                library:Notify("Buying Sigil Knight skills...")
-                interact_with_npc(COORDS.KnightCaptainFrey, DIALOGUE.Frey.first)
-                task.wait(0.5)
-                interact_with_npc(COORDS.KnightCaptainFrey, DIALOGUE.Frey.second)
-            end
-
-            local function talk_to_jagen()
-                library:Notify("Getting ultra skill from Jagen...")
-                interact_with_npc(COORDS.Jagen, DIALOGUE.Jagen.first)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Jagen, DIALOGUE.Jagen.second)
-            end
-
-            local function talk_to_draug()
-                library:Notify("Doing Draug quest...")
-                interact_with_npc(COORDS.Draug, DIALOGUE.Draug.first)
-            end
-
-            local function talk_to_reynauld()
-                library:Notify("Doing Reynauld quest...")
-                interact_with_npc(COORDS.Reynauld, DIALOGUE.Reynauld.first)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Reynauld, DIALOGUE.Reynauld.second)
-            end
-
-            local function talk_to_dorgoth()
-                library:Notify("Buying turnip from Dorgoth...")
-                interact_with_npc(COORDS.Dorgoth, DIALOGUE.Dorgoth.first)
-            end
-
-            local function talk_to_hespe()
-                library:Notify("Doing Hespe quest...")
-                interact_with_npc(COORDS.Hespe, DIALOGUE.Hespe.first)
-            end
-
-            local function talk_to_lerase()
-                library:Notify("Handing in ice protection to Lerase...")
-                interact_with_npc(COORDS.Lerase, DIALOGUE.Lerase.first)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Lerase, DIALOGUE.Lerase.second)
-            end
-
-            local function talk_to_fanari()
-                library:Notify("Doing Fanari quest...")
-                interact_with_npc(COORDS.Fanari, DIALOGUE.Fanari.first)
-                task.wait(0.5)
-                interact_with_npc(COORDS.Fanari, DIALOGUE.Fanari.second)
-            end
-
-            local function talk_to_ria()
-                library:Notify("Finishing Ria quest...")
-                interact_with_npc(COORDS.Ria, DIALOGUE.Ria.first)
-            end
-
-            local function talk_to_rita()
-                library:Notify("Speaking to Rita...")
-                interact_with_npc(COORDS.Rita, DIALOGUE.Rita.first)
-            end
-
-            local function talk_to_renari()
-                library:Notify("Speaking to Renari...")
-                interact_with_npc(COORDS.Renari, DIALOGUE.Renari.first)
-            end
-
-            local function talk_to_yaalda()
-                library:Notify("Speaking to Ya'alda...")
-                interact_with_npc(COORDS.Yaalda, DIALOGUE.Yaalda.first)
-            end
-
-            -- ===== RESET CHARACTER =====
-            local function reset_character()
-                library:Notify("Resetting character...")
-                if plr.Character then
-                    plr.Character:BreakJoints()
-                end
-                task.wait(3)
-                
-                while not (plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")) do
-                    task.wait(0.5)
-                end
-                task.wait(1)
-                return true
-            end
-
-            -- ===== GAIN ORDERLY LOOP =====
-            local function loop_gain_orderly(times)
-                times = times or 5
-                library:Notify(string.format("Starting Gain Orderly loop (%d times)...", times))
-                
-                local completed = 0
-                
-                for attempt = 1, times * 2 do
-                    if completed >= times then break end
-                    
-                    if not plr.Character or not FindFirstChild(plr.Character, "HumanoidRootPart") then
-                        return false
-                    end
-                    
-                    local elixir = FindFirstChild(plr.Backpack, "Tespian Elixir")
-                    if not elixir then
-                        library:Notify("Out of Tespian Elixir!")
-                        return false
-                    end
-                    
-                    if cs:HasTag(plr.Character, "Danger") then
-                        repeat task.wait(0.5) until not cs:HasTag(plr.Character, "Danger")
-                    end
-                    
-                    local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
-                    if humanoid then
-                        humanoid:EquipTool(elixir)
-                        task.wait(0.3)
-                        
-                        local equipped = FindFirstChild(plr.Character, "Tespian Elixir")
-                        if equipped and FindFirstChild(equipped, "RemoteEvent") then
-                            equipped.RemoteEvent:FireServer(plr.Character.HumanoidRootPart.CFrame, "Part", "Self")
-                            library:Notify(string.format("Gain Orderly %d/%d", completed + 1, times))
-                            task.wait(2)
-                            
-                            if FindFirstChild(plr.Character, "Immortal") then
-                                completed = completed + 1
-                                library:Notify(string.format("Gain Orderly completed! (%d/%d)", completed, times))
-                            end
-                        end
-                    end
-                    task.wait(0.5)
-                end
-                
-                return completed >= times
-            end
-
-            -- ===== ZSCROOM FARMING =====
-            local function farm_zscrooms()
-                library:Notify("Going to zscroom spawn...")
-                SmoothTeleport(COORDS.ZscroomSpawn)
-                task.wait(1)
-                
-                library:Notify("Gathering zscrooms to farm spot...")
-                SmoothTeleport(COORDS.ZscroomFarm)
-                task.wait(1)
-                
-                library:Notify("Farming zscrooms...")
-                
-                if Toggles.flight then
-                    Toggles.flight:SetValue(true)
-                end
-                
-                library:Notify("Training fist until mana unlocked...")
-                local mana_unlocked = false
-                local fist_attempts = 0
-                
-                while not mana_unlocked and fist_attempts < 100 do
-                    if plr.Character and FindFirstChild(plr.Character, "Mana") then
-                        mana_unlocked = true
-                        break
-                    end
-                    
-                    if utility and utility.LeftClick then
-                        utility:LeftClick()
-                    end
-                    task.wait(0.2)
-                    fist_attempts = fist_attempts + 1
-                end
-                
-                if mana_unlocked then
-                    library:Notify("Mana unlocked!")
-                end
-                
-                library:Notify("Training mana with zscrooms...")
-                if Toggles.AutoCharge then
-                    Toggles.AutoCharge:SetValue(true)
-                end
-                if Toggles.train_climb then
-                    Toggles.train_climb:SetValue(true)
-                end
-                
-                local train_time = 60
-                local start_time = tick()
-                while tick() - start_time < train_time do
-                    if utility and utility.LeftClick then
-                        utility:LeftClick()
-                    end
-                    task.wait(0.1)
-                end
-                
-                if Toggles.train_climb then
-                    Toggles.train_climb:SetValue(false)
-                end
-                
-                library:Notify("Zscroom farming complete!")
-                return true
-            end
-
-            -- ===== DAY FARM UNTIL DAY 1 =====
-            local function day_farm_until_day1()
-                library:Notify("Teleporting to dayfarm spot...")
-                SmoothTeleport(COORDS.DayfarmSpot)
-                task.wait(1)
-                
-                library:Notify("Farming until Day 1...")
-                if Toggles.day_farm then
-                    Toggles.day_farm:SetValue(true)
-                end
-                
-                local current_days = utility:getPlayerDays() or 0
-                while current_days < 1 do
-                    task.wait(10)
-                    current_days = utility:getPlayerDays() or 0
-                    library:Notify(string.format("Current days: %d", current_days))
-                end
-                
-                if Toggles.day_farm then
-                    Toggles.day_farm:SetValue(false)
-                end
-                
-                library:Notify("Day 1 reached!")
-                return true
-            end
-
-            -- ===== MAIN BOT EXECUTION =====
-            local function start_class_progression()
-                if trinket_bot.path_running then
-                    library:Notify("Bot already running!")
-                    return
-                end
-                
-                library:Notify("=== Starting Class Progression Bot ===")
-                
-                -- ===== STEP 1: Loop Gain Orderly 5 times =====
-                if not loop_gain_orderly(5) then
-                    library:Notify("Gain Orderly failed! Need Tespian Elixirs.")
-                    return
-                end
-                
-                -- ===== STEP 2: Teleport to Santorini Inn =====
-                teleport_to_inn("Santorini")
-                task.wait(1)
-                
-                -- ===== STEP 3: Bronze Sword NPC =====
-                library:Notify("Getting Bronze Sword...")
-                interact_with_npc(COORDS.BronzeSword, "Alright.")
-                task.wait(1)
-                
-                -- ===== STEP 4: Teleport to Oresfall Inn =====
-                teleport_to_inn("Oresfall")
-                task.wait(1)
-                
-                -- ===== STEP 5: Dormin =====
-                talk_to_dormin()
-                task.wait(1)
-                
-                -- ===== STEP 6: Reset =====
-                reset_character()
-                
-                -- ===== STEP 7: Zscroom farming =====
-                farm_zscrooms()
-                
-                -- ===== STEP 8: Teleport to Renova Inn =====
-                teleport_to_inn("Renova")
-                task.wait(1)
-                
-                -- ===== STEP 9: Alfric =====
-                talk_to_alfric()
-                task.wait(1)
-                
-                -- ===== STEP 10: Teleport to Oresfall Inn =====
-                teleport_to_inn("Oresfall")
-                task.wait(1)
-                
-                -- ===== STEP 11: Alana =====
-                talk_to_alana()
-                task.wait(1)
-                
-                -- ===== STEP 12: Teleport to Southern Sanctuary Inn =====
-                teleport_to_inn("Southern Sanctuary")
-                task.wait(1)
-                
-                -- ===== STEP 13: Lachesis =====
-                talk_to_lachesis()
-                task.wait(1)
-                
-                -- ===== STEP 14: Teleport to Central Sanctuary =====
-                teleport_to_inn("Central Sanctuary")
-                task.wait(1)
-                
-                -- ===== STEP 15: Kothe =====
-                talk_to_kothe()
-                task.wait(1)
-                
-                -- ===== STEP 16: Knight Captain Frey =====
-                talk_to_frey()
-                task.wait(1)
-                
-                -- ===== STEP 17: Teleport to Castle Sanctuary Inn =====
-                teleport_to_inn("Castle Sanctuary")
-                task.wait(1)
-                
-                -- ===== STEP 18: Draug =====
-                talk_to_draug()
-                task.wait(1)
-                
-                -- ===== STEP 19: Dorgoth =====
-                talk_to_dorgoth()
-                task.wait(1)
-                
-                -- ===== STEP 20: Reynauld =====
-                talk_to_reynauld()
-                task.wait(1)
-                
-                -- ===== STEP 21: Teleport to Southern Sanctuary Inn =====
-                teleport_to_inn("Southern Sanctuary")
-                task.wait(1)
-                
-                -- ===== STEP 22: Hespe =====
-                talk_to_hespe()
-                task.wait(1)
-                
-                -- ===== STEP 23: Teleport to Wayside Inn =====
-                teleport_to_inn("Wayside")
-                task.wait(1)
-                
-                -- ===== STEP 24: Brom =====
-                talk_to_brom()
-                task.wait(1)
-                
-                -- ===== STEP 25: Teleport to Santorini Inn =====
-                teleport_to_inn("Santorini")
-                task.wait(1)
-                
-                -- ===== STEP 26: Fir =====
-                talk_to_fir()
-                task.wait(1)
-                
-                -- ===== STEP 27: Reset =====
-                reset_character()
-                
-                -- ===== STEP 28: Day farm until Day 1 =====
-                day_farm_until_day1()
-                
-                -- ===== STEP 29: Teleport to Oresfall Inn =====
-                teleport_to_inn("Oresfall")
-                task.wait(1)
-                
-                -- ===== STEP 30: Hendrick =====
-                library:Notify("Handing in turnip to Hendrick...")
-                interact_with_npc(COORDS.Hendrick, "Hand in turnip")  -- Still need exact dialogue
-                task.wait(1)
-                
-                -- ===== STEP 31: Reset =====
-                reset_character()
-                
-                -- ===== STEP 32: Dormin again =====
-                talk_to_dormin()
-                task.wait(1)
-                
-                -- ===== STEP 33: Lerase =====
-                talk_to_lerase()
-                task.wait(1)
-                
-                -- ===== STEP 34: Skycastle =====
-                library:Notify("Going to Skycastle...")
-                SmoothTeleport(COORDS.SkycastleTP)
-                task.wait(0.5)
-                talk_to_rita()
-                task.wait(0.5)
-                talk_to_renari()
-                task.wait(0.5)
-                talk_to_fanari()
-                task.wait(1)
-                
-                -- ===== STEP 35: Teleport to Flowerlight Town Inn =====
-                teleport_to_inn("Flowerlight Town")
-                task.wait(1)
-                
-                -- ===== STEP 36: Ria =====
-                talk_to_ria()
-                task.wait(1)
-                
-                -- ===== STEP 37: Teleport to Castle Sanctuary =====
-                teleport_to_inn("Castle Sanctuary")
-                task.wait(1)
-                
-                -- ===== STEP 38: Jagen =====
-                talk_to_jagen()
-                task.wait(1)
-                
-                -- ===== STEP 39: Ya'alda =====
-                talk_to_yaalda()
-                
-                library:Notify("=== Class Progression Complete! ===")
-            end
-
-            -- ===== ADD GUI BUTTONS =====
-            group_trinket_bot:AddDivider()
-            group_trinket_bot:AddLabel("=== CLASS PROGRESSION BOT ===")
-
-            group_trinket_bot:AddButton({
-                Text = "Start Class Progression",
-                Func = function()
-                    task.spawn(start_class_progression)
-                end,
-                Tooltip = "Complete class progression (requires 5 Tespian Elixirs)"
-            })
-
-            group_trinket_bot:AddButton({
-                Text = "Loop Gain Orderly Only",
-                Func = function()
-                    task.spawn(function()
-                        loop_gain_orderly(5)
-                    end)
-                end,
-                Tooltip = "Only loops Gain Orderly 5 times"
-            })
-
-            group_trinket_bot:AddButton({
-                Text = "Test: Farm Zscrooms Only",
-                Func = function()
-                    task.spawn(farm_zscrooms)
-                end,
-                Tooltip = "Test zscroom farming section only"
-            })
-
+group_trinket_bot:AddButton({
+    Text = "Test: Farm Zscrooms Only",
+    Func = function()
+        task.spawn(farm_zscrooms)
+    end,
+    Tooltip = "Test zscroom farming section only"
+})
 
             group_trinket_bot:AddInput("PointWaitTime", {
                 Default = "0",
