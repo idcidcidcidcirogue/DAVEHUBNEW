@@ -12555,7 +12555,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
                 local current_position = root.Position
                 local distance = (targetPosition - current_position).Magnitude
-                if distance > 1500 then
+                if distance > 20000 then
                     library:Notify(string.format("!! Attempted teleport of %.0f studs! Stopping path... (if this is a bug DM work at a pizza place bot)", distance))
                     trinket_bot.path_running = false
                     return
