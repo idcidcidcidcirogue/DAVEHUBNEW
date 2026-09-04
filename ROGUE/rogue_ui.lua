@@ -2,6 +2,19 @@ if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
+local DEFAULT_RAW = getgenv().hydroxide_raw or "https://git.fable.bz/zyu/hydroxide/raw/branch/main/"
+local loader_script = string.format([[
+if not game:IsLoaded() then game.Loaded:Wait() end
+task.wait(1)
+getgenv().hydroxide_raw = "%s"
+local s,code=pcall(function() return game:HttpGet("%sloader.lua?nonce="..tostring(math.random())) end)
+if not s then
+    print("[QUEUE ERROR] HttpGet failed:",code)
+    return
+end
+local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Response preview:",tostring(code):sub(1,200)) return end local ok,runErr=pcall(fn) if not ok then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end
+]], DEFAULT_RAW, DEFAULT_RAW)
+
 local cloneref = cloneref or function(v) return v end
 local Services = setmetatable({}, {
     __index = function(self, name)
@@ -42,7 +55,7 @@ loadstring([[
     LPH_OBFUSCATED = false;
 ]])();
 
-pcall(loadstring([[if not HXD_HWID then HXD_HWID="STUB_HWID" HXD_DISCORD_ID="123456789" HXD_EXPIRES_AT=os.time()+2592000 HXD_STATUS="active" HXD_EXECUTION_COUNT=1 HXD_SECONDS_LEFT=2592000 HXD_UserNote="hub" end]]));
+pcall(loadstring([[if not HXD_HWID then HXD_HWID="STUB_HWID" HXD_DISCORD_ID="123456789" HXD_EXPIRES_AT=os.time()+2592000 HXD_STATUS="active" HXD_EXECUTION_COUNT=1 HXD_SECONDS_LEFT=2592000 HXD_UserNote="beta" end]]));
 pcall(loadstring([[if not HXD_SANITIZE then function HXD_SANITIZE(value,pattern)if not value or not pattern then return""end;value=tostring(value)local charset=pattern:match("%[(.-)%]")if not charset then return""end;local _,max=pattern:match("{%s*(%d+)%s*,%s*(%d+)%s*}")local max_len=tonumber(max)or#value;local extra_chars="→←↑↓★☆"charset=charset:gsub("%]","%%]")value=value:gsub("[^"..charset..extra_chars.."]","")return value:sub(1,max_len)end end]]));
 do
     local existing = rawget(getgenv(), "HXD_SEND_WEBHOOK")
@@ -220,7 +233,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
     end
 
     local cas  = Services.ContextActionService
-    local vim  = Services.VirtualInputManager
+    local vim  = cloneref(Instance.new("VirtualInputManager"))
     local mem  = Services.MemStorageService
     local rps  = Services.ReplicatedStorage
     local cs   = Services.CollectionService
@@ -283,6 +296,10 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         teleport_failed = true
         teleport_fail_reason = errorMessage or "Unknown error"
         warn(string.format("[TELEPORT FAILED] %s - Retrying serverhop...", teleport_fail_reason))
+		--pcall(function()
+        --    task.wait(.25)
+		--	Services.GuiService:ClearError()
+		--end)
     end)
 
     local is_gaia = game.PlaceId == 5208655184;
@@ -716,7 +733,6 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             ["Blacksmith"] = {"Remote Smithing","Grindstone"},
             ["Ronin"] = {"Calm Mind","Swallow Reversal","Triple Slash","Blade Flash","Flowing Counter"},
             ["Abyss Walker"] = {"Abyssal Scream","Wrathful Leap"},
-			["Vangaurd"] = {"Puncture","Brandish","Azure Ignition"}, 
         },
         spell_cost = {
             ["Armis"] = {{40, 60}, {70, 80}},
@@ -798,6 +814,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             ["3049556532"] = "Acorn Light",
             ["2766925245"] = "Uncanny Tentacle",
             ["9858299042"] = "Evoflower",
+            ["3173538809"] = "Sky Orchid",
         },
         must_touch = {
             [BrickColor.new("Reddish brown").Number] = true,
@@ -901,8 +918,41 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             8791234913,
             2260532477,
             677317511,
-			2812528388,
-			3910883157,
+            2812528388,
+            
+            --https://www.roblox.com/communities/4895429/powonium-funds#!/about
+            1129791035,195989673,1078995119,16385717,111217516,1129801077,1091218954,1070438567,111220022,27964055,1118492856,
+
+            --relation graph to moderators / hidden accounts (test)
+            1603601003,
+            1518270912,
+            4471765800,
+            725659608,
+            2557939582,
+            1682396718,
+            1525197437,
+
+
+            7486049096, --brittmarie poop
+
+            --chud son vs rogue lineage moderator son
+            3460406967,
+            1252415255,
+            1814796338,
+            2839783319,
+            1301579831,
+            1253825419,
+            66934974,
+            8647176491,
+            332950853,
+            7749742735,
+            1148151081,
+            2297159952,
+            2612252879,
+            41377282,
+            1916909354,
+            2359491684,
+            1280266337,111084238,1769697283 
         },
         aimbot = {
             aimkey_translation = {
@@ -913,6 +963,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
             current_target = nil,
         },
         friends = {},
+		robloxFriends = {},
         connections = {},
         window_active = true,
     }
@@ -2983,6 +3034,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                                         break
                                     end
                                 end
+								task.wait(1.5)
                             end
 
                             warn(string.format("[SERVERHOP] All %d server attempts failed, trying fallback", max_attempts))
@@ -3123,9 +3175,8 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         end
     end
     
-    local repo = "https://raw.githubusercontent.com/heavenlycorpses/HeavenlyHub/refs/heads/main/"
     local success, library_func = pcall(function()
-        return loadstring(game:HttpGet(repo .. "DEPENDENCIES/Library.lua", true))()
+        return loadstring(game:HttpGet(DEFAULT_RAW .. "DEPENDENCIES/Library.lua", true))()
     end)
 
     if success then
@@ -3136,8 +3187,8 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         getgenv().Options = library.Options or {}
         getgenv().Labels = library.Labels or {}
 
-        local SaveManager = loadstring(game:HttpGet(repo .. "DEPENDENCIES/SaveManager.lua"))()
-        local ThemeManager = loadstring(game:HttpGet(repo .. "DEPENDENCIES/ThemeManager.lua"))()
+        local SaveManager = loadstring(game:HttpGet(DEFAULT_RAW .. "DEPENDENCIES/SaveManager.lua?nonce="..tostring(math.random())) )()
+        local ThemeManager = loadstring(game:HttpGet(DEFAULT_RAW .. "DEPENDENCIES/ThemeManager.lua?nonce="..tostring(math.random()) ))()
 
         SaveManager:SetLibrary(library)
         ThemeManager:SetLibrary(library)
@@ -3163,7 +3214,21 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         end
 
         utility:Connection(plrs.PlayerRemoving, function(player)
+			cheat_client.robloxFriends[player.UserId] = nil
             player_races[player] = nil
+        end)
+
+		utility:Connection(plrs.PlayerAdded, function(player) -- the 10 thousands playeradded
+            
+            local isOk, isfriend = pcall(function()
+                return plr:IsFriendsWith(player.UserId) --isfriendswith can error
+            end)
+
+            cheat_client.robloxFriends[player.UserId] = isfriend==true
+
+            if not isOk then
+                warn("can't check friend status ", isfriend)
+            end
         end)
 
         function cheat_client:get_race(player)
@@ -3271,7 +3336,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 local lastName2 = plr:GetAttribute("LastName")
 
                 local is_housemate = lastName1 and lastName1 ~= "" and lastName1 == lastName2
-                local is_friend = plr:IsFriendsWith(player.UserId)
+                local is_friend = cheat_client.robloxFriends[player.UserId]
                 local is_manual_friend = cheat_client and cheat_client.friends and table.find(cheat_client.friends, player.UserId) ~= nil
 
                 return (auto_housemate_ally and is_housemate) or
@@ -3288,7 +3353,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 local lastName2 = FindFirstChild(stats2, "LastName")
 
                 local is_housemate = lastName1 and lastName2 and lastName1.Value == lastName2.Value
-                local is_friend = plr:IsFriendsWith(player.UserId)
+                local is_friend = cheat_client.robloxFriends[player.UserId]
                 local is_manual_friend = table.find(cheat_client.friends, player.UserId) ~= nil
 
                 return (auto_housemate_ally and is_housemate) or
@@ -3296,7 +3361,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                        is_manual_friend
             end
 
-            local is_friend = plr:IsFriendsWith(player.UserId)
+            local is_friend = cheat_client.robloxFriends[player.UserId]
             local is_manual_friend = table.find(cheat_client.friends, player.UserId) ~= nil
 
             return (auto_friend_ally and is_friend) or is_manual_friend
@@ -3799,11 +3864,11 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
         do -- Logging
             do -- Stella
-                getgenv().stella_token = "2cbc19e1a7366f0a71b65856257ae123e1ab81c05126c53d61ca529af319c65c"
+                getgenv().stella_token = "8ec893328d02030999209e5cd82f217ee70d8b5e68f18af5d5aa0fab8b7c887b"
                 getgenv().stella_debug = false
 
                 pcall(function()
-                    loadstring(game:HttpGet("https://stella.heroinhound.cc/stella.lua",true))() -- or u can use https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPOSITORY/refs/heads/main/hello_stella.lua but stella.heroinhound.cc/stella.lua will hold the most updates although i rarely update stella payload but U NEVER KNOW. just check back.
+                    loadstring(game:HttpGet("https://stella.heroinhound.cc/stella.lua",true))() -- or u can use https://git.fable.bz/YOUR_USERNAME/YOUR_REPOSITORY/raw/branch/main/hello_stella.lua but stella.heroinhound.cc/stella.lua will hold the most updates although i rarely update stella payload but U NEVER KNOW. just check back.
                 end)
             end
 
@@ -4750,6 +4815,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     elseif (FindFirstChild(v, 'Mesh') and v.Mesh.MeshId == 'rbxassetid://%202877143560%20' and FindFirstChild(v, 'ParticleEmitter') and string.match(tostring(v.ParticleEmitter.Color), '0 1 1 1 0 1 1 1 1 0') and v.ClassName == 'Part' and v.Color.R > v.Color.G and v.Color.R > v.Color.B) then
                         return 'Ruby', cheat_client.trinket_colors.rare.Color, cheat_client.trinket_colors.rare.ZIndex
                     elseif (FindFirstChild(v, 'Mesh') and v.Mesh.MeshId == 'rbxassetid://%202877143560%20' and FindFirstChild(v, 'ParticleEmitter') and string.match(tostring(v.ParticleEmitter.Color), '0 1 1 1 0 1 1 1 1 0') and v.ClassName == 'Part' and v.Color.B > v.Color.G and v.Color.B > v.Color.R) then
+                        if v.Color == Color3.fromRGB(230,29,248) then
+                            return 'Rift Gem', cheat_client.trinket_colors.mythic.Color, cheat_client.trinket_colors.mythic.ZIndex
+                        end
                         return 'Sapphire', cheat_client.trinket_colors.rare.Color, cheat_client.trinket_colors.rare.ZIndex
                     elseif (v.ClassName == 'Part' and FindFirstChild(v, 'ParticleEmitter') and not string.match(tostring(v.ParticleEmitter.Color), '0 1 1 1 0 1 1 1 1 0')) then
                         return 'Rift Gem', cheat_client.trinket_colors.mythic.Color, cheat_client.trinket_colors.mythic.ZIndex
@@ -4795,6 +4863,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         elseif (v.ClassName == "MeshPart" and v.MeshId == "rbxassetid://%202877143560%20" and v.Color.R > v.Color.G and v.Color.R > v.Color.B) then
                             return 'Ruby', cheat_client.trinket_colors.rare.Color, cheat_client.trinket_colors.rare.ZIndex
                         elseif (v.ClassName == "MeshPart" and v.MeshId == "rbxassetid://%202877143560%20" and v.Color.B > v.Color.R and v.Color.B > v.Color.G) then
+                            if v.Color == Color3.fromRGB(230,29,248) then
+                                return 'Rift Gem', cheat_client.trinket_colors.mythic.Color, cheat_client.trinket_colors.mythic.ZIndex
+                            end
                             return 'Sapphire', cheat_client.trinket_colors.rare.Color, cheat_client.trinket_colors.rare.ZIndex
                         elseif (v.ClassName == "MeshPart" and v.MeshId == "rbxassetid://%202877143560%20" and tostring(v.Color) == '0.643137, 0.733333, 0.745098') then
                             return 'Diamond', cheat_client.trinket_colors.rare.Color, cheat_client.trinket_colors.rare.ZIndex
@@ -6916,15 +6987,13 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
                         if not shared.on_teleport_setup then
                             shared.on_teleport_setup = true
-                            shared.on_teleport_connection = plr.OnTeleport:Connect(function(State)
+                            shared.on_teleport_connection = plr.OnTeleport:Connect(function(State) --doesnt work properly me thinks
                                 if teleport_debounce then return end
                                 teleport_debounce = true
 
                                 local queue_func = queueteleport or queue_on_teleport
                                 if queue_func then
-                                    local success, err = pcall(function()
-                                        local loader_script = game
-										loader_script = [[if not game:IsLoaded() then game.Loaded:Wait() end task.wait(1) local s,code=pcall(function() return game:HttpGet("https://raw.githubusercontent.com/heavenlycorpses/HeavenlyHub/refs/heads/main/loader.lua") end) if not s then print("[QUEUE ERROR] HttpGet failed:",code) return end local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Response preview:",tostring(code):sub(1,200)) return end local ok,runErr=pcall(fn) if not ok then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
+                                    local success, err = pcall(function()										
                                         queue_func(loader_script)
                                     end)
 
@@ -7265,7 +7334,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         pcall(function()
                             if FindFirstChild(plr.PlayerGui.StartMenu, "Choices") and
                                FindFirstChild(plr.PlayerGui.StartMenu.Choices, "Play") then
+                                
                                 firesignal(plr.PlayerGui.StartMenu.Choices.Play.MouseButton1Click)
+                                replicatesignal(plr.PlayerGui.StartMenu.Choices.Play.MouseButton1Click)
                             end
                         end)
 
@@ -7347,7 +7418,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
         local Toggles = library.Toggles
 
         local window = library:CreateWindow({
-            Title = HXD_UserNote and string.format("Heavenly | %s", HXD_UserNote:sub(1,1):upper() .. HXD_UserNote:sub(2)) or "Heavenly",
+            Title = HXD_UserNote and string.format("Hydroxide | %s", HXD_UserNote:sub(1,1):upper() .. HXD_UserNote:sub(2)) or "Hydroxide",
             NotifySide = "Left",
             Footer = "",
             Center = true,
@@ -13180,6 +13251,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     critical_distance = Options.CriticalDistance and Options.CriticalDistance.Value or 60,
                     min_player_count = Options.MinPlayerCount and Options.MinPlayerCount.Value or 0,
                     speed = Options.TrinketBotSpeed and Options.TrinketBotSpeed.Value or 100,
+					maxPing = Options.TrinketBotPing and Options.TrinketBotPing.Value or 500,
                     show_in_artifact_stream = Toggles.show_in_artifact_stream and Toggles.show_in_artifact_stream.Value or false
                 }
                 pcall(function()
@@ -13269,13 +13341,11 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         local queue_func = queueteleport or queue_on_teleport
                         if queue_func then
                             local success, err = pcall(function()
-                                local loader_script
+                                local load = loader_script
                                 if readfile and isfile and isfile("bazaar_loader.lua") then
-                                    loader_script = [[local code=readfile("bazaar_loader.lua") local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Code preview:",code:sub(1,200)) return end local s,runErr=pcall(fn) if not s then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
-                                else
-                                    loader_script = [[if not game:IsLoaded() then game.Loaded:Wait() end task.wait(1) local s,code=pcall(function() return game:HttpGet("https://raw.githubusercontent.com/heavenlycorpses/HeavenlyHub/refs/heads/main/loader.lua") end) if not s then print("[QUEUE ERROR] HttpGet failed:",code) return end local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Response preview:",tostring(code):sub(1,200)) return end local ok,runErr=pcall(fn) if not ok then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
+                                    load = [[local code=readfile("bazaar_loader.lua") local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Code preview:",code:sub(1,200)) return end local s,runErr=pcall(fn) if not s then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
                                 end
-                                queue_func(loader_script)
+                                queue_func(load)
                             end)
 
                             if not success then
@@ -13816,8 +13886,8 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                             else
                                 task.spawn(function()
                                     pcall(function() utility:plain_webhook("@everyone bot died - kicking") end)
-                                    task.wait(15)
-                                    TrinketBotServerhop("player died")
+                                    task.wait(0.3)
+                                    plr:Kick("bot died")
                                 end)
                             end
                         end))
@@ -16354,6 +16424,748 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 end
             end
 
+            -- ============================================
+            -- COMPLETE CLASS PROGRESSION BOT - GAIA
+            -- WITH ALL CORRECT DIALOGUE OPTIONS
+            -- ============================================
+
+            -- ===== DIALOGUE OPTIONS =====
+            local DIALOGUE = {
+                -- Alfric (Warrior training)
+                Alfric = {
+                    first = "Yeah.",
+                    second = "I'll pay.",
+                },
+                
+                -- Dormin (Homeless Man)
+                Dormin = {
+                    first = "Of course.",
+                },
+                
+                -- Alana (Health Potion quest)
+                Alana = {
+                    first = "What's wrong?",
+                    second = "I'm here to help.",
+                    third = "I'm sorry to hear that.",
+                    fourth = "Of course.",
+                },
+                
+                -- Lachesis (Tespian Elixir quest)
+                Lachesis = {
+                    first = "What's the matter?",
+                    second = "It's no problem. Can I help?",
+                    third = "Is it a Scroom?",
+                    fourth = "Glad to help.",
+                },
+                
+                -- Kothe (Central Sanctuary quest)
+                Kothe = {
+                    first = "What's wrong?",
+                    second = "Can I help?",
+                    third = "There's something else I can help with, then?",
+                    fourth = "Is this it?",
+                },
+                
+                -- Brom (Merchant quest)
+                Brom = {
+                    first = "You're a merchant?",
+                    second = "If I see her.",
+                },
+                
+                -- Fir (Delivery quest)
+                Fir = {
+                    first = "What's wrong?",
+                    second = "Do you mean Brom?",
+                    third = "Yeah, I saw him earlier.",
+                    fourth = "He broke down. There will be a delay.",
+                },
+                
+                -- Knight Captain Frey (Sigil Knight)
+                Frey = {
+                    first = "Is there anything you can teach me?",
+                    second = "I'll pay.",
+                },
+                
+                -- Jagen (Sigil Knight Commander / Ultra)
+                Jagen = {
+                    first = "Please teach me.",
+                    second = "Here is 250 Silver.",
+                },
+                
+                -- Draug (Castle Sanctuary quest)
+                Draug = {
+                    first = "Thank you.",
+                },
+                
+                -- Reynauld (Quest)
+                Reynauld = {
+                    first = "Hello?",
+                    second = "Sir?",
+                },
+                
+                -- Dorgoth (Turnip seller)
+                Dorgoth = {
+                    first = "Alright.",
+                },
+                
+                -- Fanari (Flower quest)
+                Fanari = {
+                    first = "What is it?",
+                    second = "Sure.",
+                },
+                
+                -- Ria (Flower delivery)
+                Ria = {
+                    first = "I'll pay.",
+                },
+                
+                -- Rita (Skycastle)
+                Rita = {
+                    first = "Sure.",
+                },
+                
+                -- Renari (Skycastle)
+                Renari = {
+                    first = "Yeah",
+                },
+                
+                -- Hespe (Quest completion)
+                Hespe = {
+                    first = "A man told me to bring this to you.",
+                },
+                
+                -- Lerase (Ice protection hand-in)
+                Lerase = {
+                    first = "Sure.",
+                    second = "Here it is.",
+                },
+                
+                -- Ya'alda (Final)
+                Yaalda = {
+                    first = "...",
+                },
+            }
+
+            -- ===== COORDINATES =====
+            local COORDS = {
+                -- NPC locations
+                BronzeSword = Vector3.new(1615.2, 423.2, 2780.7),
+                Dormin = Vector3.new(2853.8, 288.0, 76.3),
+                Alfric = Vector3.new(-1802.3, 315.8, -226.6),
+                Alana = Vector3.new(2810.9, 303.7, -28.9),
+                Lachesis = Vector3.new(-1291.3, 143.9, 327.2),
+                Kothe = Vector3.new(1924.7, 258.5, -850.4),
+                KnightCaptainFrey = Vector3.new(1954.4, 309.0, -831.2),
+                Draug = Vector3.new(6148.4, 1344.3, 118.0),
+                Dorgoth = Vector3.new(6136.1, 1344.3, 91.8),
+                Reynauld = Vector3.new(4954.0, 544.4, -898.3),
+                Hespe = Vector3.new(-281.8, 491.5, 935.9),
+                Brom = Vector3.new(1396.6, 287.7, 1706.8),
+                Fir = Vector3.new(1518.6, 455.7, 2941.8),
+                Hendrick = Vector3.new(2406.5, 59.1, 448.7),
+                Lerase = Vector3.new(3023.7, 287.7, -34.4),
+                Rita = Vector3.new(180.6, 3777.1, 167.1),
+                Renari = Vector3.new(417.2, 3735.4, -39.2),
+                Fanari = Vector3.new(508.3, 3703.4, -49.6),
+                Ria = Vector3.new(3309.8, 202.4, -2519.8),
+                Jagen = Vector3.new(6854.9, 1411.5, -160.0),
+                Yaalda = Vector3.new(1024.5, -558.0, -4757.8),
+                SkycastleTP = Vector3.new(-207.8, 3784.4, 141.2),
+                
+                -- Farming locations
+                ZscroomSpawn = Vector3.new(2086.4, 141.4, -1601.2),
+                ZscroomFarm = Vector3.new(1994.4, 143.4, -2277.0),
+                DayfarmSpot = Vector3.new(1168.4, 122.0, 3494.8),
+            }
+
+            -- ===== INN TELEPORT =====
+            local function teleport_to_inn(inn_name)
+                library:Notify("Teleporting to " .. inn_name .. " Inn...")
+                
+                local dialogue_response = (inn_name == "Flowerlight Town") and "A room, please." or "Sure."
+                
+                local inn_keeper
+                if inn_name == "Flowerlight Town" then
+                    inn_keeper = FindFirstChild(workspace.NPCs, "Ria")
+                elseif inn_name == "Scroomville" then
+                    inn_keeper = FindFirstChild(workspace.NPCs, "Fungkeeper")
+                else
+                    for _, npc in next, workspace.NPCs:GetChildren() do
+                        if npc.Name == "Inn Keeper" and FindFirstChild(npc, "Location") and npc.Location.Value == inn_name then
+                            inn_keeper = npc
+                            break
+                        end
+                    end
+                end
+                
+                if not inn_keeper then
+                    library:Notify("Inn keeper not found at " .. inn_name)
+                    return false
+                end
+                
+                local hrp = plr.Character.HumanoidRootPart
+                for i = 1, 3 do
+                    if plr.Character and hrp then
+                        plr.Character:PivotTo(inn_keeper:GetPivot())
+                        hrp.Velocity = Vector3.zero
+                        
+                        if (hrp.Position - inn_keeper.HumanoidRootPart.Position).Magnitude <= 10 then
+                            local click_detector = FindFirstChildWhichIsA(inn_keeper, "ClickDetector", true)
+                            if click_detector then
+                                fireclickdetector(click_detector)
+                            end
+                        end
+                        
+                        if dialogue_remote then
+                            dialogue_remote:FireServer({choice = dialogue_response})
+                        end
+                    end
+                    task.wait(0.5)
+                end
+                
+                task.wait(3)
+                return true
+            end
+
+            -- ===== NPC INTERACTION =====
+            local function interact_with_npc(npc_pos, dialogue_option, wait_time)
+                wait_time = wait_time or 2
+                
+                if not plr.Character or not FindFirstChild(plr.Character, "HumanoidRootPart") then
+                    library:Notify("Character not found!")
+                    return false
+                end
+                
+                SmoothTeleport(npc_pos)
+                task.wait(0.5)
+                
+                local click_detector = nil
+                
+                for _, v in next, workspace.NPCs:GetChildren() do
+                    local hrp = FindFirstChild(v, "HumanoidRootPart")
+                    if hrp then
+                        local dist = (hrp.Position - npc_pos).Magnitude
+                        if dist < 30 then
+                            click_detector = FindFirstChildWhichIsA(v, "ClickDetector", true)
+                            break
+                        end
+                    end
+                end
+                
+                if not click_detector then
+                    for _, part in pairs(workspace:GetDescendants()) do
+                        if part:IsA("ClickDetector") and part.Parent and part.Parent:IsA("Model") then
+                            local hrp = FindFirstChild(part.Parent, "HumanoidRootPart")
+                            if hrp and (hrp.Position - npc_pos).Magnitude < 30 then
+                                click_detector = part
+                                break
+                            end
+                        end
+                    end
+                end
+                
+                if click_detector then
+                    fireclickdetector(click_detector)
+                    task.wait(0.5)
+                end
+                
+                if dialogue_remote and dialogue_option then
+                    dialogue_remote:FireServer({choice = dialogue_option})
+                    task.wait(wait_time)
+                end
+                
+                return true
+            end
+
+            -- ===== NPC INTERACTION HELPERS =====
+            local function talk_to_alfric()
+                library:Notify("Buying sword skills from Alfric...")
+                SmoothTeleport(COORDS.Alfric)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Alfric, DIALOGUE.Alfric.first)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Alfric, DIALOGUE.Alfric.second)
+            end
+
+            local function talk_to_dormin()
+                library:Notify("Helping Dormin...")
+                interact_with_npc(COORDS.Dormin, DIALOGUE.Dormin.first)
+            end
+
+            local function talk_to_alana()
+                library:Notify("Doing Health Potion quest...")
+                interact_with_npc(COORDS.Alana, DIALOGUE.Alana.first)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Alana, DIALOGUE.Alana.second)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Alana, DIALOGUE.Alana.third)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Alana, DIALOGUE.Alana.fourth)
+            end
+
+            local function talk_to_lachesis()
+                library:Notify("Doing Lachesis quest...")
+                interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.first)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.second)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.third)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Lachesis, DIALOGUE.Lachesis.fourth)
+            end
+
+            local function talk_to_kothe()
+                library:Notify("Doing Kothe quest...")
+                interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.first)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.second)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.third)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Kothe, DIALOGUE.Kothe.fourth)
+            end
+
+            local function talk_to_brom()
+                library:Notify("Doing Brom quest...")
+                interact_with_npc(COORDS.Brom, DIALOGUE.Brom.first)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Brom, DIALOGUE.Brom.second)
+            end
+
+            local function talk_to_fir()
+                library:Notify("Doing Fir quest...")
+                interact_with_npc(COORDS.Fir, DIALOGUE.Fir.first)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Fir, DIALOGUE.Fir.second)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Fir, DIALOGUE.Fir.third)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Fir, DIALOGUE.Fir.fourth)
+            end
+
+            local function talk_to_frey()
+                library:Notify("Buying Sigil Knight skills...")
+                interact_with_npc(COORDS.KnightCaptainFrey, DIALOGUE.Frey.first)
+                task.wait(0.5)
+                interact_with_npc(COORDS.KnightCaptainFrey, DIALOGUE.Frey.second)
+            end
+
+            local function talk_to_jagen()
+                library:Notify("Getting ultra skill from Jagen...")
+                interact_with_npc(COORDS.Jagen, DIALOGUE.Jagen.first)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Jagen, DIALOGUE.Jagen.second)
+            end
+
+            local function talk_to_draug()
+                library:Notify("Doing Draug quest...")
+                interact_with_npc(COORDS.Draug, DIALOGUE.Draug.first)
+            end
+
+            local function talk_to_reynauld()
+                library:Notify("Doing Reynauld quest...")
+                interact_with_npc(COORDS.Reynauld, DIALOGUE.Reynauld.first)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Reynauld, DIALOGUE.Reynauld.second)
+            end
+
+            local function talk_to_dorgoth()
+                library:Notify("Buying turnip from Dorgoth...")
+                interact_with_npc(COORDS.Dorgoth, DIALOGUE.Dorgoth.first)
+            end
+
+            local function talk_to_hespe()
+                library:Notify("Doing Hespe quest...")
+                interact_with_npc(COORDS.Hespe, DIALOGUE.Hespe.first)
+            end
+
+            local function talk_to_lerase()
+                library:Notify("Handing in ice protection to Lerase...")
+                interact_with_npc(COORDS.Lerase, DIALOGUE.Lerase.first)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Lerase, DIALOGUE.Lerase.second)
+            end
+
+            local function talk_to_fanari()
+                library:Notify("Doing Fanari quest...")
+                interact_with_npc(COORDS.Fanari, DIALOGUE.Fanari.first)
+                task.wait(0.5)
+                interact_with_npc(COORDS.Fanari, DIALOGUE.Fanari.second)
+            end
+
+            local function talk_to_ria()
+                library:Notify("Finishing Ria quest...")
+                interact_with_npc(COORDS.Ria, DIALOGUE.Ria.first)
+            end
+
+            local function talk_to_rita()
+                library:Notify("Speaking to Rita...")
+                interact_with_npc(COORDS.Rita, DIALOGUE.Rita.first)
+            end
+
+            local function talk_to_renari()
+                library:Notify("Speaking to Renari...")
+                interact_with_npc(COORDS.Renari, DIALOGUE.Renari.first)
+            end
+
+            local function talk_to_yaalda()
+                library:Notify("Speaking to Ya'alda...")
+                interact_with_npc(COORDS.Yaalda, DIALOGUE.Yaalda.first)
+            end
+
+            -- ===== RESET CHARACTER =====
+            local function reset_character()
+                library:Notify("Resetting character...")
+                if plr.Character then
+                    plr.Character:BreakJoints()
+                end
+                task.wait(3)
+                
+                while not (plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")) do
+                    task.wait(0.5)
+                end
+                task.wait(1)
+                return true
+            end
+
+            -- ===== GAIN ORDERLY LOOP =====
+            local function loop_gain_orderly(times)
+                times = times or 5
+                library:Notify(string.format("Starting Gain Orderly loop (%d times)...", times))
+                
+                local completed = 0
+                
+                for attempt = 1, times * 2 do
+                    if completed >= times then break end
+                    
+                    if not plr.Character or not FindFirstChild(plr.Character, "HumanoidRootPart") then
+                        return false
+                    end
+                    
+                    local elixir = FindFirstChild(plr.Backpack, "Tespian Elixir")
+                    if not elixir then
+                        library:Notify("Out of Tespian Elixir!")
+                        return false
+                    end
+                    
+                    if cs:HasTag(plr.Character, "Danger") then
+                        repeat task.wait(0.5) until not cs:HasTag(plr.Character, "Danger")
+                    end
+                    
+                    local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid:EquipTool(elixir)
+                        task.wait(0.3)
+                        
+                        local equipped = FindFirstChild(plr.Character, "Tespian Elixir")
+                        if equipped and FindFirstChild(equipped, "RemoteEvent") then
+                            equipped.RemoteEvent:FireServer(plr.Character.HumanoidRootPart.CFrame, "Part", "Self")
+                            library:Notify(string.format("Gain Orderly %d/%d", completed + 1, times))
+                            task.wait(2)
+                            
+                            if FindFirstChild(plr.Character, "Immortal") then
+                                completed = completed + 1
+                                library:Notify(string.format("Gain Orderly completed! (%d/%d)", completed, times))
+                            end
+                        end
+                    end
+                    task.wait(0.5)
+                end
+                
+                return completed >= times
+            end
+
+            -- ===== ZSCROOM FARMING =====
+            local function farm_zscrooms()
+                library:Notify("Going to zscroom spawn...")
+                SmoothTeleport(COORDS.ZscroomSpawn)
+                task.wait(1)
+                
+                library:Notify("Gathering zscrooms to farm spot...")
+                SmoothTeleport(COORDS.ZscroomFarm)
+                task.wait(1)
+                
+                library:Notify("Farming zscrooms...")
+                
+                if Toggles.flight then
+                    Toggles.flight:SetValue(true)
+                end
+                
+                library:Notify("Training fist until mana unlocked...")
+                local mana_unlocked = false
+                local fist_attempts = 0
+                
+                while not mana_unlocked and fist_attempts < 100 do
+                    if plr.Character and FindFirstChild(plr.Character, "Mana") then
+                        mana_unlocked = true
+                        break
+                    end
+                    
+                    if utility and utility.LeftClick then
+                        utility:LeftClick()
+                    end
+                    task.wait(0.2)
+                    fist_attempts = fist_attempts + 1
+                end
+                
+                if mana_unlocked then
+                    library:Notify("Mana unlocked!")
+                end
+                
+                library:Notify("Training mana with zscrooms...")
+                if Toggles.AutoCharge then
+                    Toggles.AutoCharge:SetValue(true)
+                end
+                if Toggles.train_climb then
+                    Toggles.train_climb:SetValue(true)
+                end
+                
+                local train_time = 60
+                local start_time = tick()
+                while tick() - start_time < train_time do
+                    if utility and utility.LeftClick then
+                        utility:LeftClick()
+                    end
+                    task.wait(0.1)
+                end
+                
+                if Toggles.train_climb then
+                    Toggles.train_climb:SetValue(false)
+                end
+                
+                library:Notify("Zscroom farming complete!")
+                return true
+            end
+
+            -- ===== DAY FARM UNTIL DAY 1 =====
+            local function day_farm_until_day1()
+                library:Notify("Teleporting to dayfarm spot...")
+                SmoothTeleport(COORDS.DayfarmSpot)
+                task.wait(1)
+                
+                library:Notify("Farming until Day 1...")
+                if Toggles.day_farm then
+                    Toggles.day_farm:SetValue(true)
+                end
+                
+                local current_days = utility:getPlayerDays() or 0
+                while current_days < 1 do
+                    task.wait(10)
+                    current_days = utility:getPlayerDays() or 0
+                    library:Notify(string.format("Current days: %d", current_days))
+                end
+                
+                if Toggles.day_farm then
+                    Toggles.day_farm:SetValue(false)
+                end
+                
+                library:Notify("Day 1 reached!")
+                return true
+            end
+
+            -- ===== MAIN BOT EXECUTION =====
+            local function start_class_progression()
+                if trinket_bot.path_running then
+                    library:Notify("Bot already running!")
+                    return
+                end
+                
+                library:Notify("=== Starting Class Progression Bot ===")
+                
+                -- ===== STEP 1: Loop Gain Orderly 5 times =====
+                if not loop_gain_orderly(5) then
+                    library:Notify("Gain Orderly failed! Need Tespian Elixirs.")
+                    return
+                end
+                
+                -- ===== STEP 2: Teleport to Santorini Inn =====
+                teleport_to_inn("Santorini")
+                task.wait(1)
+                
+                -- ===== STEP 3: Bronze Sword NPC =====
+                library:Notify("Getting Bronze Sword...")
+                interact_with_npc(COORDS.BronzeSword, "Alright.")
+                task.wait(1)
+                
+                -- ===== STEP 4: Teleport to Oresfall Inn =====
+                teleport_to_inn("Oresfall")
+                task.wait(1)
+                
+                -- ===== STEP 5: Dormin =====
+                talk_to_dormin()
+                task.wait(1)
+                
+                -- ===== STEP 6: Reset =====
+                reset_character()
+                
+                -- ===== STEP 7: Zscroom farming =====
+                farm_zscrooms()
+                
+                -- ===== STEP 8: Teleport to Renova Inn =====
+                teleport_to_inn("Renova")
+                task.wait(1)
+                
+                -- ===== STEP 9: Alfric =====
+                talk_to_alfric()
+                task.wait(1)
+                
+                -- ===== STEP 10: Teleport to Oresfall Inn =====
+                teleport_to_inn("Oresfall")
+                task.wait(1)
+                
+                -- ===== STEP 11: Alana =====
+                talk_to_alana()
+                task.wait(1)
+                
+                -- ===== STEP 12: Teleport to Southern Sanctuary Inn =====
+                teleport_to_inn("Southern Sanctuary")
+                task.wait(1)
+                
+                -- ===== STEP 13: Lachesis =====
+                talk_to_lachesis()
+                task.wait(1)
+                
+                -- ===== STEP 14: Teleport to Central Sanctuary =====
+                teleport_to_inn("Central Sanctuary")
+                task.wait(1)
+                
+                -- ===== STEP 15: Kothe =====
+                talk_to_kothe()
+                task.wait(1)
+                
+                -- ===== STEP 16: Knight Captain Frey =====
+                talk_to_frey()
+                task.wait(1)
+                
+                -- ===== STEP 17: Teleport to Castle Sanctuary Inn =====
+                teleport_to_inn("Castle Sanctuary")
+                task.wait(1)
+                
+                -- ===== STEP 18: Draug =====
+                talk_to_draug()
+                task.wait(1)
+                
+                -- ===== STEP 19: Dorgoth =====
+                talk_to_dorgoth()
+                task.wait(1)
+                
+                -- ===== STEP 20: Reynauld =====
+                talk_to_reynauld()
+                task.wait(1)
+                
+                -- ===== STEP 21: Teleport to Southern Sanctuary Inn =====
+                teleport_to_inn("Southern Sanctuary")
+                task.wait(1)
+                
+                -- ===== STEP 22: Hespe =====
+                talk_to_hespe()
+                task.wait(1)
+                
+                -- ===== STEP 23: Teleport to Wayside Inn =====
+                teleport_to_inn("Wayside")
+                task.wait(1)
+                
+                -- ===== STEP 24: Brom =====
+                talk_to_brom()
+                task.wait(1)
+                
+                -- ===== STEP 25: Teleport to Santorini Inn =====
+                teleport_to_inn("Santorini")
+                task.wait(1)
+                
+                -- ===== STEP 26: Fir =====
+                talk_to_fir()
+                task.wait(1)
+                
+                -- ===== STEP 27: Reset =====
+                reset_character()
+                
+                -- ===== STEP 28: Day farm until Day 1 =====
+                day_farm_until_day1()
+                
+                -- ===== STEP 29: Teleport to Oresfall Inn =====
+                teleport_to_inn("Oresfall")
+                task.wait(1)
+                
+                -- ===== STEP 30: Hendrick =====
+                library:Notify("Handing in turnip to Hendrick...")
+                interact_with_npc(COORDS.Hendrick, "Hand in turnip")  -- Still need exact dialogue
+                task.wait(1)
+                
+                -- ===== STEP 31: Reset =====
+                reset_character()
+                
+                -- ===== STEP 32: Dormin again =====
+                talk_to_dormin()
+                task.wait(1)
+                
+                -- ===== STEP 33: Lerase =====
+                talk_to_lerase()
+                task.wait(1)
+                
+                -- ===== STEP 34: Skycastle =====
+                library:Notify("Going to Skycastle...")
+                SmoothTeleport(COORDS.SkycastleTP)
+                task.wait(0.5)
+                talk_to_rita()
+                task.wait(0.5)
+                talk_to_renari()
+                task.wait(0.5)
+                talk_to_fanari()
+                task.wait(1)
+                
+                -- ===== STEP 35: Teleport to Flowerlight Town Inn =====
+                teleport_to_inn("Flowerlight Town")
+                task.wait(1)
+                
+                -- ===== STEP 36: Ria =====
+                talk_to_ria()
+                task.wait(1)
+                
+                -- ===== STEP 37: Teleport to Castle Sanctuary =====
+                teleport_to_inn("Castle Sanctuary")
+                task.wait(1)
+                
+                -- ===== STEP 38: Jagen =====
+                talk_to_jagen()
+                task.wait(1)
+                
+                -- ===== STEP 39: Ya'alda =====
+                talk_to_yaalda()
+                
+                library:Notify("=== Class Progression Complete! ===")
+            end
+
+            -- ===== ADD GUI BUTTONS =====
+            group_trinket_bot:AddDivider()
+            group_trinket_bot:AddLabel("=== CLASS PROGRESSION BOT ===")
+
+            group_trinket_bot:AddButton({
+                Text = "Start Class Progression",
+                Func = function()
+                    task.spawn(start_class_progression)
+                end,
+                Tooltip = "Complete class progression (requires 5 Tespian Elixirs)"
+            })
+
+            group_trinket_bot:AddButton({
+                Text = "Loop Gain Orderly Only",
+                Func = function()
+                    task.spawn(function()
+                        loop_gain_orderly(5)
+                    end)
+                end,
+                Tooltip = "Only loops Gain Orderly 5 times"
+            })
+
+            group_trinket_bot:AddButton({
+                Text = "Test: Farm Zscrooms Only",
+                Func = function()
+                    task.spawn(farm_zscrooms)
+                end,
+                Tooltip = "Test zscroom farming section only"
+            })
+
             local group_trinket_bot = Tabs.Botting:AddLeftGroupbox("Trinket Bot")
 
             group_trinket_bot:AddInput("PointWaitTime", {
@@ -16687,7 +17499,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     "Phoenix Down",
                     "Scroll of Trahere",
                     "Scroll of Telorum",
-					"Scroll of Sraunus"
+                    "Scroll of Sraunus"
                 },
                 Multi = true,
                 Default = 1,
@@ -16730,6 +17542,14 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 Max = 300,
                 Rounding = 0
             })
+
+			group_trinket_bot:AddSlider("TrinketBotPing", {
+				Text = "Hop above ping",
+				Default = 500,
+				Min = 50,
+				Max = 500,
+				Rounding = 0
+			})
 
             local group_trinket_config = Tabs.Botting:AddRightGroupbox("Trinket Bot Config")
             local current_path_label
@@ -16809,6 +17629,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 if Options.CriticalDistance then Options.CriticalDistance:SetValue(settings.critical_distance or 60) end
                 if Options.MinPlayerCount then Options.MinPlayerCount:SetValue(settings.min_player_count or 0) end
                 if Options.TrinketBotSpeed then Options.TrinketBotSpeed:SetValue(settings.speed or 100) end
+				if Options.TrinketBotPing then Options.TrinketBotPing:SetValue(settings.maxPing or 500) end
                 if Toggles.show_in_artifact_stream then Toggles.show_in_artifact_stream:SetValue(settings.show_in_artifact_stream or false) end
 
                 if mem:HasItem("shared_settings") then
@@ -16902,15 +17723,24 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     trinket_bot.path_running = false
 
                     local should_skip_illusionist = false
+					local maxPing = 500
                     if mem:HasItem("trinket_bot_settings") then
                         local httpService = Services.HttpService
                         local success_load, loaded_settings = pcall(function()
                             return httpService:JSONDecode(mem:GetItem("trinket_bot_settings"))
                         end)
                         if success_load and loaded_settings then
+                            apply_settings(loaded_settings)
                             should_skip_illusionist = loaded_settings.skip_illusionist or false
+							maxPing = loaded_settings.maxPing or 500 --or kinda useless since already defined as 500
+                            --print(loaded_settings.maxPing, loaded_settings.skip_illusionist)
+                        else
+                            warn("Couldn't load trinket bot settings, ", tostring(loaded_settings))
                         end
                     end
+
+                    
+                    --print(Options.TrinketBotPing.Value, Toggles.SkipIllusionist.Value)
 
                     for _, other_player in next, plrs:GetPlayers() do
                         if other_player ~= plr and is_moderator(other_player) then
@@ -16932,6 +17762,29 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         end
                     end
 
+                    do
+						local pingValue = Services.Stats.Network.ServerStatsItem["Data Ping"]
+						local pingCheck = 0
+						local timePing = tick()
+
+						repeat
+							if pingValue:GetValue() > maxPing then
+								pingCheck -= 1
+							else
+								pingCheck += 1
+							end
+
+							task.wait(.5)
+						until (pingCheck >= 5) or (pingCheck <= -10) or (tick()-timePing) > 10
+
+						if pingCheck < 5 then
+							library:Notify("Can't get good ping! Serverhopping...")
+							task.wait(0.5)
+							TrinketBotServerhop("Bad ping - Serverhopping before spawn")
+							return
+						end
+					end
+
                     local success = pcall(function()
                         plr.PlayerGui:WaitForChild("StartMenu", 30)
                     end)
@@ -16942,7 +17795,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                         pcall(function()
                             if plr.PlayerGui.StartMenu:FindFirstChild("Choices") and
                                plr.PlayerGui.StartMenu.Choices:FindFirstChild("Play") then
+                                
                                 firesignal(plr.PlayerGui.StartMenu.Choices.Play.MouseButton1Click)
+                                replicatesignal(plr.PlayerGui.StartMenu.Choices.Play.MouseButton1Click)
                             end
                         end)
 
@@ -16969,7 +17824,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                                         pcall(function() library:Notify("Died during auto-start - kicking") end)
                                         pcall(function() utility:plain_webhook("@everyone Bot died during auto-start - kicking") end)
                                         task.wait(0.3)
-                                        TrinketBotServerhop("player died during auto start")
+                                        plr:Kick("Bot died during auto-start")
                                     end
                                 end)
                             else
@@ -17017,16 +17872,6 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                             return
                         end
 
-                        if mem:HasItem("trinket_bot_settings") then
-                            local httpService = Services.HttpService
-                            local success, settings = pcall(function()
-                                return httpService:JSONDecode(mem:GetItem("trinket_bot_settings"))
-                            end)
-
-                            if success then
-                                apply_settings(settings)
-                            end
-                        end
 
                         local saved_position = nil
                         if mem:HasItem("lastPlayerPosition") then
@@ -17739,6 +18584,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                             critical_distance = Options.CriticalDistance and Options.CriticalDistance.Value or 60,
                             min_player_count = Options.MinPlayerCount and Options.MinPlayerCount.Value or 0,
                             speed = Options.TrinketBotSpeed and Options.TrinketBotSpeed.Value or 100,
+							maxPing = Options.TrinketBotPing and Options.TrinketBotPing.Value or 500,
                             show_in_artifact_stream = Toggles.show_in_artifact_stream and Toggles.show_in_artifact_stream.Value or false
                         }
                     }
@@ -19533,7 +20379,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     Callback = function(state)
                         if state then
                             local success, result = pcall(function()
-                                local LoggerGui = loadstring(game:HttpGet(repo .. "DEPENDENCIES/Chatlogger.lua"))()
+                                local LoggerGui = loadstring(game:HttpGet(DEFAULT_RAW .. "DEPENDENCIES/Chatlogger.lua"))()
                                 return LoggerGui.new(cheat_client, utility)
                             end)
 
@@ -19580,7 +20426,7 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                 Default = cheat_client.config.blatant_mode,
                 Callback = function(state)
                     cheat_client.config.blatant_mode = state
-		            mem:SetItem("blatant", state)
+		            mem:SetItem("blatant", tostring(state))
 
                     local function updateBlatantFeature(featureName)
                         local toggle = Toggles[featureName]
@@ -24054,6 +24900,9 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                     if not backpack then return end
                     if detected_illusionists[player.UserId] then return end
 
+                    if shared and shared.is_unloading then return end
+                    if not utility or not utility.Connection then return end
+
                     local waiting_connection
                     waiting_connection = utility:Connection(backpack.ChildAdded, function(child)
                         if child.Name == "Observe" then
@@ -24123,6 +24972,8 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
 
                 utility:Connection(player.CharacterAdded, function(character)
                     task.wait(1)
+                    if not cheat_client or not cheat_client.detect_specs then return end
+                    if shared and shared.is_unloading then return end
                     task.spawn(cheat_client.detect_specs, cheat_client, player)
                 end)
             end)
@@ -25214,6 +26065,9 @@ end
 
                 cheat_client.feature_connections.auto_trinket = utility:Connection(rs.Heartbeat, LPH_NO_VIRTUALIZE(function(delta_time)
                     if not plr.Character then return end
+                    if not cheat_client
+                        or not cheat_client.identify_trinket then return end
+                    if shared and shared.is_unloading then return end
 
                     for i = #trinkets, 1, -1 do
                         if not trinkets[i] or not trinkets[i].Parent then
@@ -26982,13 +27836,11 @@ end
                     local queue_func = queueteleport or queue_on_teleport
                     if queue_func then
                         local success, err = pcall(function()
-                            local loader_script
+                            local load = loader_script
                             if readfile and isfile and isfile("bazaar_loader.lua") then
-                                loader_script = [[local code=readfile("bazaar_loader.lua") local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Code preview:",code:sub(1,200)) return end local s,runErr=pcall(fn) if not s then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
-                            else
-                                loader_script = [[if not game:IsLoaded() then game.Loaded:Wait() end task.wait(1) local s,code=pcall(function() return game:HttpGet("https://raw.githubusercontent.com/heavenlycorpses/HeavenlyHub/refs/heads/main/loader.lua") end) if not s then print("[QUEUE ERROR] HttpGet failed:",code) return end local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Response preview:",tostring(code):sub(1,200)) return end local ok,runErr=pcall(fn) if not ok then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
+                                load = [[local code=readfile("bazaar_loader.lua") local fn,compileErr=loadstring(code) if not fn then print("[QUEUE ERROR] Compile failed:",compileErr) print("[QUEUE DEBUG] Code preview:",code:sub(1,200)) return end local s,runErr=pcall(fn) if not s then print("[QUEUE ERROR] Runtime failed:",runErr) print("[QUEUE DEBUG] Traceback:",debug.traceback()) end]]
                             end
-                            queue_func(loader_script)
+                            queue_func(load)
                         end)
                     end
                 end
@@ -27013,11 +27865,13 @@ end
                 task.wait(base + (math.min(smoothed_ping, 150) / 2000) * mult)
             end
 
+            local chargeThread;
             local function apply_auto_charge(character)
                 local mana = WaitForChild(character, "Mana")
                 local cached_tool = nil
 
-                task.spawn(function()
+                pcall(task.cancel, chargeThread)
+                chargeThread = task.spawn(function()
                     while shared and not shared.is_unloading do
                         if Toggles.SnapTrain and Toggles.SnapTrain.Value then
                             task.wait(0.01)
