@@ -177,10 +177,10 @@ if game.PlaceId == 3541987450 or game.PlaceId == 5208655184 or game.PlaceId == 1
                                     while true do
                                         plrs_local.LocalPlayer:Kick("Ban Attempt")
                                         task.wait()
-                                    end
+                                    end)
                                 end
                             end
-
+                        end
                             if lockThreads[getfenv(3)] then
                                 return function() end
                             end
