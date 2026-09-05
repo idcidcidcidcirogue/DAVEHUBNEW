@@ -2,12 +2,20 @@ if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
-local DEFAULT_RAW = getgenv().hydroxide_raw or "https://git.fable.bz/zyu/hydroxide/raw/branch/main/"
+-- Fix: Ensure getgenv exists
+if not getgenv then
+    getgenv = function() return _G end
+end
+
+-- Set your fork URL
+getgenv().hydroxide_raw = "https://raw.githubusercontent.com/idcidcidcidcirogue/DAVEHUBNEW/refs/heads/main/"
+
+local DEFAULT_RAW = getgenv().hydroxide_raw
 local loader_script = string.format([[
 if not game:IsLoaded() then game.Loaded:Wait() end
 task.wait(1)
 getgenv().hydroxide_raw = "%s"
-local s,code=pcall(function() return game:HttpGet("%sloader.lua?nonce="..tostring(math.random())) end)
+local s,code=pcall(function() return game:HttpGet("%sROGUE/rogue_ui.lua?nonce="..tostring(math.random())) end)
 if not s then
     print("[QUEUE ERROR] HttpGet failed:",code)
     return
