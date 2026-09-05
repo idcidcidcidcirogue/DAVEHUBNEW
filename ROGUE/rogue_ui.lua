@@ -16679,6 +16679,7 @@ local function loop_gain_orderly(times)
     return completed >= times
 end
 
+-- ===== ZSCROOM FARMING (FIXED - USES FLOWERLIGHT TOWN INN) =====
 -- ===== ZSCROOM FARMING (USES ORIGINAL INN SYSTEM) =====
 local function farm_zscrooms()
     library:Notify("Going to zscrooms...")
@@ -16743,61 +16744,6 @@ local function farm_zscrooms()
     -- STEP 5: Farm
     library:Notify("Farming zscrooms...")
     
-    -- Train fist until mana unlocked
-    library:Notify("Training fist until mana unlocked...")
-    local mana_unlocked = false
-    local fist_attempts = 0
-    
-    while not mana_unlocked and fist_attempts < 100 do
-        if plr.Character and FindFirstChild(plr.Character, "Mana") then
-            mana_unlocked = true
-            break
-        end
-        
-        if utility and utility.LeftClick then
-            utility:LeftClick()
-        end
-        task.wait(0.2)
-        fist_attempts = fist_attempts + 1
-    end
-    
-    if mana_unlocked then
-        library:Notify("Mana unlocked!")
-    end
-    
-    -- Auto charge mana and train
-    library:Notify("Training mana with zscrooms...")
-    if Toggles.AutoCharge then
-        Toggles.AutoCharge:SetValue(true)
-    end
-    if Toggles.train_climb then
-        Toggles.train_climb:SetValue(true)
-    end
-    
-    local train_time = 60
-    local start_time = tick()
-    local hits = 0
-    
-    while tick() - start_time < train_time do
-        if utility and utility.LeftClick then
-            utility:LeftClick()
-            hits = hits + 1
-            if hits % 10 == 0 then
-                library:Notify(string.format("Trained %d times...", hits))
-            end
-        end
-        task.wait(0.1)
-    end
-    
-    library:Notify(string.format("Completed %d hits!", hits))
-    
-    if Toggles.train_climb then
-        Toggles.train_climb:SetValue(false)
-    end
-    
-    library:Notify("Zscroom farming complete!")
-    return true
-end
     -- Train fist until mana unlocked
     library:Notify("Training fist until mana unlocked...")
     local mana_unlocked = false
